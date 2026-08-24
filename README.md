@@ -43,7 +43,7 @@ yourself):
 | App | Workspace | Matched by |
 |---|---|---|
 | Steam | 3 | `class = "steam"` |
-| Dota 2 | 6 | `class = "dota2"` |
+| Steam games (see below) | 6 | `class = "<game class>"` |
 | Discord | 5 | `class = "discord"` |
 | WhatsApp (web app) | 5 | `class = "chrome-web.whatsapp.com__..."` |
 | Windows VM (FreeRDP) | 4 | `title = "Windows VM - Omarchy"` |
@@ -51,6 +51,28 @@ yourself):
 The main Steam window is also forced to tile (`{ class = "steam", title =
 "Steam" }, { tile = true }`), overriding Omarchy's default float for that
 window. Friends List and other Steam popups are untouched.
+
+**Steam games -> workspace 6** is a plain list, not automatic detection.
+An earlier attempt hooked `hl.on("window.open", ...)` and checked each new
+window's process for the `SteamAppId` environment variable Steam sets on
+game processes -- this does **not** work on this install, because Steam's
+Linux Runtime sandboxes games with pressure-vessel/bwrap, which builds a
+curated environment for the sandboxed process that drops `SteamAppId`
+before the game ever sees it (confirmed by logging `class`/`pid`/detection
+result for a real Dota 2 launch: the class and pid were captured correctly,
+but the env var was absent). So instead, `hyprland.lua` has a maintained
+list:
+
+```lua
+local steam_game_classes = {
+  "dota2",
+}
+```
+
+To add a game: open it, run `hyprctl clients` while it's running, copy the
+`class:` value shown for its window, and add it as another entry in that
+table (escaping regex special characters the same way the WhatsApp rule
+does, if the class needs it).
 
 **These class/title matches were read off the actual running windows via
 `hyprctl clients` at the time this was written.** Chromium's web-app class

@@ -32,7 +32,19 @@ o.window("steam", { workspace = "3" })
 -- Override Omarchy's default float for the main Steam window (Friends List
 -- and other popups are matched separately and stay floating).
 o.window({ class = "steam", title = "Steam" }, { tile = true })
-o.window("dota2", { workspace = "6" })
+-- Steam games that open on workspace 6. Add the game's window class here --
+-- open it once, run `hyprctl clients` while it's running, and copy the
+-- "class:" value shown for its window. If a class contains regex special
+-- characters (. + * ( ) etc.), escape them with a backslash, same as
+-- "chrome-web\\.whatsapp\\.com__.*" below.
+local steam_game_classes = {
+  "dota2",
+}
+
+for _, class in ipairs(steam_game_classes) do
+  o.window(class, { workspace = "6" })
+end
+
 o.window("discord", { workspace = "5" })
 o.window("chrome-web\\.whatsapp\\.com__.*", { workspace = "5" })
 o.window({ title = "Windows VM - Omarchy" }, { workspace = "4" })
