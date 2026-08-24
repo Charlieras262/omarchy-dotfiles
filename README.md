@@ -42,8 +42,6 @@ yourself):
 
 | App | Workspace | Matched by |
 |---|---|---|
-| Terminal (any, via the `terminal` tag) | 1 | `tag = "terminal"` |
-| Browser (chromium- or firefox-based) | 1 | `tag = "chromium-based-browser"` / `"firefox-based-browser"` |
 | Steam | 3 | `class = "steam"` |
 | Dota 2 | 6 | `class = "dota2"` |
 | Discord | 5 | `class = "discord"` |

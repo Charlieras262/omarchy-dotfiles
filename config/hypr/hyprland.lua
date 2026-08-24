@@ -28,9 +28,6 @@ require("default.hypr.toggles")
 -- Add any other personal Hyprland configuration below.
 
 -- Open specific apps on specific workspaces.
-o.window({ tag = "terminal" }, { workspace = "1" })
-o.window({ tag = "chromium-based-browser" }, { workspace = "1" })
-o.window({ tag = "firefox-based-browser" }, { workspace = "1" })
 o.window("steam", { workspace = "3" })
 -- Override Omarchy's default float for the main Steam window (Friends List
 -- and other popups are matched separately and stay floating).
