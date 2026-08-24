@@ -1,0 +1,22 @@
+[bar]
+size-horizontal = 34
+background-alpha = 0.62
+
+[menu]
+background-alpha = 0.62
+scrim-alpha = 0
+
+[notifications]
+background-alpha = 0.62
+
+[popups]
+background-alpha = 0.62
+
+[tooltip]
+background-alpha = 0.75
+
+[polkit]
+scrim-alpha = 0.35
+
+[image-picker]
+scrim-alpha = 0.35

@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# Reapplies Charlie's personal Omarchy customizations after a fresh install.
+# Safe to re-run: it backs up whatever is already in place before overwriting.
+#
+# What this restores:
+#   - Workspaces 1/3/5 pinned to DP-1, 2/4/6 pinned to DP-2 (persistent)
+#   - App-to-workspace window rules (terminal/browser/steam/dota2/discord/
+#     whatsapp/windows-vm) + Steam main window forced to tile
+#   - Extra keybinds: cycle workspaces on the current monitor, focus
+#     left/right monitor
+#   - Blur + translucency across all Omarchy shell surfaces (bar, menu,
+#     notifications, popups, tooltip), taller bar, no menu button in the bar
+#   - Custom "charlie.workspaces" bar widget (shows workspace 6, colored
+#     active-workspace indicator) + active-window title widget enabled
+#
+# See README.md for the reasoning behind each piece and for things that may
+# need re-checking (monitor names, app window classes) after a reinstall.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HYPR_DIR="$HOME/.config/hypr"
+OMARCHY_CFG_DIR="$HOME/.config/omarchy"
+BACKUP_SUFFIX=".bak.$(date +%s)"
+
+if ! command -v omarchy >/dev/null 2>&1; then
+  echo "error: 'omarchy' command not found. Run this on an Omarchy system." >&2
+  exit 1
+fi
+
+backup_and_copy() {
+  local src="$1" dest="$2"
+  if [[ -e "$dest" ]] && ! cmp -s "$src" "$dest"; then
+    cp "$dest" "$dest$BACKUP_SUFFIX"
+    echo "backed up $dest -> $dest$BACKUP_SUFFIX"
+  fi
+  mkdir -p "$(dirname "$dest")"
+  cp "$src" "$dest"
+  echo "wrote $dest"
+}
+
+echo "== Hyprland config =="
+backup_and_copy "$SCRIPT_DIR/config/hypr/monitors.lua"   "$HYPR_DIR/monitors.lua"
+backup_and_copy "$SCRIPT_DIR/config/hypr/bindings.lua"   "$HYPR_DIR/bindings.lua"
+backup_and_copy "$SCRIPT_DIR/config/hypr/hyprland.lua"   "$HYPR_DIR/hyprland.lua"
+backup_and_copy "$SCRIPT_DIR/config/hypr/looknfeel.lua"  "$HYPR_DIR/looknfeel.lua"
+
+echo "== Omarchy shell config =="
+backup_and_copy "$SCRIPT_DIR/config/omarchy/shell.json" "$OMARCHY_CFG_DIR/shell.json"
+backup_and_copy "$SCRIPT_DIR/config/omarchy/shell.toml" "$OMARCHY_CFG_DIR/shell.toml"
+
+echo "== Custom bar widget (charlie.workspaces) =="
+mkdir -p "$OMARCHY_CFG_DIR/plugins/charlie.workspaces"
+backup_and_copy "$SCRIPT_DIR/config/omarchy/plugins/charlie.workspaces/manifest.json" \
+  "$OMARCHY_CFG_DIR/plugins/charlie.workspaces/manifest.json"
+backup_and_copy "$SCRIPT_DIR/config/omarchy/plugins/charlie.workspaces/Workspaces.qml" \
+  "$OMARCHY_CFG_DIR/plugins/charlie.workspaces/Workspaces.qml"
+
+echo
+echo "== Reloading =="
+hyprctl reload || echo "warning: 'hyprctl reload' failed -- is Hyprland running?"
+errors="$(hyprctl configerrors 2>/dev/null || true)"
+if [[ -n "$errors" ]]; then
+  echo "warning: hyprctl configerrors reported:"
+  echo "$errors"
+fi
+omarchy restart shell || echo "warning: 'omarchy restart shell' failed"
+
+cat <<'EOF'
+
+== Done. Please double-check by hand ==
+1. Monitor names may differ on new/replaced hardware:
+     hyprctl monitors all
+   If your outputs aren't DP-1/DP-2, edit config/hypr/monitors.lua's
+   hl.workspace_rule() monitor fields (and the hl.monitor() calls) to match.
+
+2. Window-rule class/title matches can drift with app updates. If Dota 2,
+   WhatsApp, or the Windows VM stop landing on their assigned workspace,
+   open them and check the real values with:
+     hyprctl clients
+   then update the matching o.window(...) call in config/hypr/hyprland.lua.
+
+3. This only restores the files this setup actually touched. It does not
+   touch hypr/input.lua, hypr/autostart.lua, or your theme -- those are
+   assumed to still be Omarchy defaults or handled separately.
+EOF
