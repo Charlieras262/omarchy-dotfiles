@@ -12,7 +12,7 @@
           "formatAlt": "d MMMM 'W'ww yyyy",
           "id": "omarchy.clock",
           "lifeExpectancy": 75,
-          "verticalFormat": "HH\n—\nmm"
+          "verticalFormat": "HH\n\u2014\nmm"
         },
         {
           "id": "omarchy.keyboard-layout"
@@ -26,7 +26,9 @@
       ],
       "left": [
         {
-          "id": "charlieras262.pill-workspaces"
+          "id": "charlieras262.pill-workspaces",
+          "indicatorXInset": 4,
+          "indicatorYInset": 4
         },
         {
           "id": "omarchy.active-window"
