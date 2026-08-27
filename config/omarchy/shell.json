@@ -27,8 +27,10 @@
       "left": [
         {
           "id": "charlieras262.pill-workspaces",
-          "indicatorXInset": 4,
-          "indicatorYInset": 4
+          "indicatorXInset": 2,
+          "indicatorYInset": 6,
+          "indicatorColor": "foreground",
+          "indicatorBold": true
         },
         {
           "id": "omarchy.active-window"
