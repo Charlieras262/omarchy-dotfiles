@@ -18,7 +18,7 @@ BarWidget {
   }
 
   function workspaceIds() {
-    var ids = [1, 2, 3, 4, 5, 6]
+    var ids = [1, 2, 3, 4, 5]
     var values = Hyprland.workspaces.values
 
     for (var i = 0; i < values.length; i++) {
@@ -34,19 +34,6 @@ BarWidget {
     if (!root.bar) return
     root.bar.run("hyprctl dispatch " + Util.shellQuote("hl.dsp.focus({ workspace = \"" + id + "\" })"))
   }
-
-  // Relative luminance (0-1). Used to pick whichever theme text color
-  // actually contrasts against the active indicator, since some themes pair
-  // a light indicator with a light foreground (or vice versa).
-  function luminance(c) {
-    return 0.299 * c.r + 0.587 * c.g + 0.114 * c.b
-  }
-
-  readonly property color activeIndicatorColor: Color.foreground
-  readonly property color activeTextColor: Math.abs(luminance(activeIndicatorColor) - luminance(Color.background))
-    > Math.abs(luminance(activeIndicatorColor) - luminance(Color.foreground))
-    ? Color.background
-    : Color.foreground
 
   readonly property real trailingGap: root.vertical ? 0 : Style.spaceReal(1.5)
 
@@ -64,36 +51,21 @@ BarWidget {
     Repeater {
       model: root.workspaceIds()
 
-      Item {
-        id: cell
+      WidgetButton {
         required property int modelData
 
         readonly property var workspace: root.workspaceById(modelData)
         readonly property bool occupied: workspace !== null && workspace.toplevels.values.length > 0
         readonly property bool focused: Hyprland.focusedWorkspace !== null && Hyprland.focusedWorkspace.id === modelData
 
-        implicitWidth: root.vertical ? root.barSize : Style.space(20)
-        implicitHeight: root.barSize
-
-        Rectangle {
-          anchors.fill: parent
-          anchors.topMargin: 6
-          anchors.bottomMargin: 6
-          color: cell.focused ? root.activeIndicatorColor : "transparent"
-          radius: 6
-        }
-
-        WidgetButton {
-          anchors.fill: parent
-          bar: root.bar
-          text: cell.modelData === 10 ? "0" : String(cell.modelData)
-          foreground: cell.focused ? root.activeTextColor : Color.foreground
-          useActiveColor: false
-          opacity: cell.occupied || cell.focused ? 1 : 0.5
-          horizontalMargin: 6
-          verticalPadding: 6
-          onPressed: function() { root.focusWorkspace(cell.modelData) }
-        }
+        bar: root.bar
+        text: focused ? "\uDB85\uDCFB" : (modelData === 10 ? "0" : String(modelData))
+        opacity: occupied || focused ? 1 : 0.5
+        horizontalMargin: 6
+        verticalPadding: 6
+        fixedWidth: root.vertical ? root.barSize : Style.space(20)
+        fixedHeight: root.barSize
+        onPressed: function() { root.focusWorkspace(modelData) }
       }
     }
   }

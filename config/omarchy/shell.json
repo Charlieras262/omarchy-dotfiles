@@ -26,7 +26,7 @@
       ],
       "left": [
         {
-          "id": "charlie.workspaces"
+          "id": "charlieras262.pill-workspaces"
         },
         {
           "id": "omarchy.active-window"
@@ -57,7 +57,10 @@
       ]
     },
     "position": "top",
-    "transparent": false
+    "transparent": false,
+    "floatGap": 8,
+    "cornerRadius": 14,
+    "id": "charlie.bar"
   },
   "idle": {
     "lock": 300,

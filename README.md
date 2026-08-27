@@ -120,32 +120,70 @@ updates -- if one stops landing on the right workspace, open it, run
   the menus). `omarchy.active-window` was added right after the workspaces
   widget to show the focused window's title.
 
-### Custom bar widget: `charlie.workspaces` (`config/omarchy/plugins/
-charlie.workspaces/`)
+### Pill workspace indicator: published plugin, not copied here
 
-Cloned from the built-in `omarchy.workspaces` (`omarchy plugin clone
-omarchy.workspaces`) and edited:
+The active-workspace pill (rounded, theme-colored, auto-contrast number)
+started as a clone of `omarchy.workspaces` kept in this repo, then got
+generalized (configurable slot count/color/radius/inset instead of
+hardcoded values) and published as its own public, opensource plugin:
 
-- Seeds workspace IDs `[1..6]` instead of `[1..5]` -- the stock widget only
-  ever shows a 6th+ workspace once it has been visited at least once in the
-  session; combined with `persistent = true` above, workspace 6 now always
-  shows.
-- The focused workspace renders as a rounded rectangle (fixed 6px radius,
-  not tied to the window-decoration rounding setting) filled with
-  `Color.foreground` (the theme's text color) instead of swapping the
-  number for an icon glyph.
-- The number's own color picks whichever of `Color.background` /
-  `Color.foreground` has more luminance contrast against that fill, so it
-  stays legible across different theme color combinations.
-- The colored rectangle has a 6px top/bottom inset so it reads as a wide
-  pill rather than a full-height square; the click target (`WidgetButton`)
-  still fills the whole bar-height cell.
+**https://github.com/Charlieras262/omarchy-pill-workspaces** (MIT)
 
-Because it's a *clone*, Omarchy updates to the stock `omarchy.workspaces`
-widget won't touch this file, but they also won't reach it -- if Omarchy
-ships a meaningfully different stock version later, diff it against
-`$OMARCHY_PATH/shell/plugins/bar/widgets/Workspaces.qml` and re-apply these
-changes by hand.
+Install it with `omarchy plugin add
+https://github.com/Charlieras262/omarchy-pill-workspaces.git --enable`
+(which is what `install.sh` does) rather than copying files from this repo
+-- that plugin's own repo is now the source of truth, and `omarchy plugin
+update` pulls new versions of it independently of this dotfiles repo.
+
+### Floating, rounded-corner bar: `charlie.bar` (`config/omarchy/plugins/
+charlie.bar/`)
+
+Cloned from the built-in `omarchy.bar` (`omarchy plugin clone omarchy.bar`)
+and edited to:
+
+- Add a configurable gap (`floatGap`, default 8px) between the bar surface
+  and whichever screen edges it's anchored to -- set via layer-shell
+  `margins` on the bar's `PanelWindow`, applied uniformly to all four
+  margins (the compositor only honors the ones that are actually anchored,
+  so this reads correctly as "top + both sides" for a top bar without
+  branching per position).
+- Make the `PanelWindow` surface itself fully transparent and draw the
+  actual bar background in a child `Rectangle` with a configurable
+  `radius` (`cornerRadius`, default 14px) instead -- so the corners outside
+  that radius show the desktop through them rather than being a square
+  window with rounded content clipped inside it.
+- Both values are read from `shell.json`'s `bar:` entry
+  (`"floatGap": 8, "cornerRadius": 14`) the same way `position` and
+  `transparent` are, with those defaults as fallback if absent.
+
+**This required a workaround for a genuine Omarchy bug**
+(`basecamp/omarchy#8007`, filed from this setup): cloning *any* `"kind":
+"bar"` plugin -- even completely unedited -- never renders, because the bar
+loads via `Loader.source` (a URL), which can't supply QML `required
+property` values at construction the way the built-in bar's
+`sourceComponent` can; `configureBar()` in `shell.qml` only sets them
+shortly *after* construction, which is too late for a `required` property.
+
+The workaround (confirmed independently by another user on the issue, on
+completely different hardware): drop `required` from the three properties
+at the top of the cloned `Bar.qml` (`omarchyPath`, `barWidgetRegistry`,
+`barConfig`) and give them inline defaults instead --
+`configureBar()` still assigns the real values immediately after, and
+nothing in `Bar.qml` reads them before that point. See the comment above
+those three properties in `config/omarchy/plugins/charlie.bar/Bar.qml`.
+
+**basecamp/omarchy PR #8146** fixes this properly from the other side
+(passing the properties as `Loader.setSource(url, initialProperties)`
+arguments, so cloned bars can keep `required`). Once that PR merges into a
+stable Omarchy release, this workaround should be reverted -- restore
+`required` on all three properties -- since it becomes redundant with the
+upstream fix. Check `gh pr view 8146 --repo basecamp/omarchy` for status.
+
+Because it's a *clone*, Omarchy updates to the stock `omarchy.bar` won't
+touch this file, but they also won't reach it -- if Omarchy ships a
+meaningfully different stock version later (especially once #8146 lands),
+diff it against `$OMARCHY_PATH/shell/plugins/bar/Bar.qml` and re-apply the
+`floatGap`/`cornerRadius` additions by hand.
 
 ## About "keeping this updated with Omarchy"
 
