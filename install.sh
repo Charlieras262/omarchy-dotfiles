@@ -13,8 +13,9 @@
 #   - Pill-shaped active-workspace indicator: published as its own plugin,
 #     https://github.com/Charlieras262/omarchy-pill-workspaces -- installed
 #     via `omarchy plugin add`, not copied from this repo
-#   - Floating, rounded-corner bar ("charlie.bar", a patched clone of
-#     omarchy.bar) + active-window title widget enabled
+#   - Floating, rounded-corner bar: published as its own plugin,
+#     https://github.com/Charlieras262/omarchy-floating-bar -- installed
+#     via `omarchy plugin add`, not copied from this repo
 #
 # See README.md for the reasoning behind each piece and for things that may
 # need re-checking (monitor names, app window classes) after a reinstall.
@@ -56,16 +57,9 @@ echo "== Pill workspace indicator (published plugin) =="
 omarchy plugin add https://github.com/Charlieras262/omarchy-pill-workspaces.git --enable --yes \
   || echo "warning: 'omarchy plugin add' failed -- install it by hand: omarchy plugin add https://github.com/Charlieras262/omarchy-pill-workspaces.git --enable"
 
-echo "== Floating rounded bar (charlie.bar) =="
-mkdir -p "$OMARCHY_CFG_DIR/plugins/charlie.bar"
-backup_and_copy "$SCRIPT_DIR/config/omarchy/plugins/charlie.bar/manifest.json" \
-  "$OMARCHY_CFG_DIR/plugins/charlie.bar/manifest.json"
-backup_and_copy "$SCRIPT_DIR/config/omarchy/plugins/charlie.bar/Bar.qml" \
-  "$OMARCHY_CFG_DIR/plugins/charlie.bar/Bar.qml"
-backup_and_copy "$SCRIPT_DIR/config/omarchy/plugins/charlie.bar/BarModel.js" \
-  "$OMARCHY_CFG_DIR/plugins/charlie.bar/BarModel.js"
-cp -r "$SCRIPT_DIR/config/omarchy/plugins/charlie.bar/widgets" "$OMARCHY_CFG_DIR/plugins/charlie.bar/" 2>/dev/null || true
-cp -r "$SCRIPT_DIR/config/omarchy/plugins/charlie.bar/indicators" "$OMARCHY_CFG_DIR/plugins/charlie.bar/" 2>/dev/null || true
+echo "== Floating rounded bar (published plugin) =="
+omarchy plugin add https://github.com/Charlieras262/omarchy-floating-bar.git --enable --yes \
+  || echo "warning: 'omarchy plugin add' failed -- install it by hand: omarchy plugin add https://github.com/Charlieras262/omarchy-floating-bar.git --enable"
 
 echo
 echo "== Reloading =="
@@ -95,10 +89,9 @@ cat <<'EOF'
    touch hypr/input.lua, hypr/autostart.lua, or your theme -- those are
    assumed to still be Omarchy defaults or handled separately.
 
-4. charlie.bar contains a workaround for an Omarchy bug (cloned "kind: bar"
-   plugins fail to render -- basecamp/omarchy#8007). If basecamp/omarchy
-   PR #8146 has since shipped in a stable release, that workaround (the
-   dropped `required` on Bar.qml's three top properties) is no longer
-   needed -- see the comment above those properties in this repo's
-   config/omarchy/plugins/charlie.bar/Bar.qml.
+4. omarchy-floating-bar contains a workaround for an Omarchy bug (cloned
+   "kind: bar" plugins fail to render -- basecamp/omarchy#8007). Check
+   https://github.com/Charlieras262/omarchy-floating-bar for whether it's
+   still needed (it becomes redundant once basecamp/omarchy#8146 ships in
+   a stable release).
 EOF

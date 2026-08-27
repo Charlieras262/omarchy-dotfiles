@@ -58,9 +58,8 @@
     },
     "position": "top",
     "transparent": false,
-    "floatGap": 8,
     "cornerRadius": 14,
-    "id": "charlie.bar"
+    "id": "charlieras262.floating-bar"
   },
   "idle": {
     "lock": 300,
