@@ -59,3 +59,18 @@ hl.config({
 -- Blur + see-through everywhere the Omarchy shell draws a surface: bar,
 -- notifications, menus, popups, OSD, polkit prompts, etc.
 hl.layer_rule({ match = { namespace = "^omarchy-.*$" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
+
+-- BEGIN charlieras262.omablur
+hl.config({
+  decoration = {
+    rounding = 8,
+    blur = {
+      enabled = true,
+      size = 9,
+      passes = 2,
+      new_optimizations = true,
+      ignore_opacity = true,
+    },
+  },
+})
+-- END charlieras262.omablur

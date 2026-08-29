@@ -20,3 +20,6 @@ scrim-alpha = 0.35
 
 [image-picker]
 scrim-alpha = 0.35
+
+[font]
+base-size = 12

@@ -1,6 +1,7 @@
 {
   "bar": {
     "centerAnchor": "omarchy.clock",
+    "id": "charlieras262.floating-bar",
     "layout": {
       "center": [
         {
@@ -12,7 +13,7 @@
           "formatAlt": "d MMMM 'W'ww yyyy",
           "id": "omarchy.clock",
           "lifeExpectancy": 75,
-          "verticalFormat": "HH\n\u2014\nmm"
+          "verticalFormat": "HH\n—\nmm"
         },
         {
           "id": "omarchy.keyboard-layout"
@@ -27,16 +28,20 @@
       "left": [
         {
           "id": "charlieras262.pill-workspaces",
+          "indicatorBold": true,
+          "indicatorColor": "foreground",
           "indicatorXInset": 2,
           "indicatorYInset": 6,
-          "indicatorColor": "foreground",
-          "indicatorBold": true
+          "maxWorkspaces": 6
         },
         {
           "id": "omarchy.active-window"
         }
       ],
       "right": [
+        {
+          "id": "charlieras262.omablur"
+        },
         {
           "id": "omarchy.tray"
         },
@@ -62,8 +67,7 @@
     },
     "position": "top",
     "transparent": false,
-    "cornerRadius": 14,
-    "id": "charlieras262.floating-bar"
+    "backgroundOpacity": 1
   },
   "idle": {
     "lock": 300,

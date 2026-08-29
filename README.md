@@ -80,6 +80,14 @@ format and Dota 2's WM class are not guaranteed stable across app/driver
 updates -- if one stops landing on the right workspace, open it, run
 `hyprctl clients`, and update the corresponding line here.
 
+### Input tweaks (`config/hypr/input.lua`)
+
+Omarchy ships this file as a template of commented-out examples; only two
+lines are actually uncommented here: `kb_variant = "intl"` and
+`numlock_by_default = true`. Everything else in the file is still the
+stock template, kept as-is so future examples Omarchy adds to it aren't
+lost by a plain overwrite.
+
 ### Extra keybinds (`config/hypr/bindings.lua`)
 
 - `SUPER+SHIFT+CTRL+UP/DOWN` -- cycle workspaces on the *current monitor
@@ -92,7 +100,12 @@ updates -- if one stops landing on the right workspace, open it, run
 ### Blur, translucency, and rounding (`config/hypr/looknfeel.lua`,
 `config/omarchy/shell.toml`, `config/omarchy/shell.json`)
 
-- `decoration.blur` is on (`size = 8, passes = 3`), plus a Hyprland layer
+- `decoration.blur` is on (`size = 8, passes = 3` in the base config --
+  `omarchy-omablur`'s own marked block further down the file, added by that
+  plugin itself, currently overrides this to whatever preset/slider value
+  was last set there; the base value here is just Omarchy's shipped
+  default, kept as the fallback for a fresh install with that plugin not
+  yet added), plus a Hyprland layer
   rule: `hl.layer_rule({ match = { namespace = "^omarchy-.*$" }, blur = true,
   blur_popups = true, ignore_alpha = 0.5 })`. The namespace regex covers
   every Omarchy shell surface (bar, menu, notifications, OSD, polkit,
@@ -155,6 +168,43 @@ gap. See that repo's README for the full option table and for **why it
 needs a workaround** for `basecamp/omarchy#8007` (cloned `"kind": "bar"`
 plugins failing to render) until `basecamp/omarchy#8146` ships in a stable
 release.
+
+### Rounding/blur tuning panel: published plugin, not copied here
+
+Same pattern again: a bar-widget popup (master on/off switch, three fixed
+presets, a Custom mode with rounding/blur-intensity sliders) that applies
+live via `hyprctl eval` and persists to a marked block in
+`~/.config/hypr/looknfeel.lua` (which is why that file's diff after
+installing this plugin will show a `-- BEGIN charlieras262.omablur` /
+`-- END` block -- leave it, it's meant to be there):
+
+**https://github.com/Charlieras262/omarchy-omablur** (MIT)
+
+Install it with `omarchy plugin add
+https://github.com/Charlieras262/omarchy-omablur.git --enable` (which is
+what `install.sh` does).
+
+### Manual system-file patches these two plugins need (not automated, not in this repo)
+
+Both `omarchy-omablur` (shell-wide opacity dimming synced to blur) and
+`omarchy-floating-bar` (notifications/popups clearing the floating bar's
+edge margin) need a one-time edit to a couple of Omarchy's own files under
+`/usr/share/omarchy/shell/`. Neither plugin ships a script to automate this
+-- doing that as root against a plugin's own git-managed, user-writable
+checkout was a real security finding on the marketplace listing (the
+checkout can change on every `omarchy plugin update`, turning an auto-run
+`sudo` script into a code-execution path). So this is a manual step, not
+something `install.sh` can do:
+
+1. `omarchy-omablur`'s README, "Making blur actually visible" -- four
+   `sudoedit` snippets (`Commons/Style.qml`, `Ui/KeyboardPanel.qml`,
+   `notifications/components/NotificationCard.qml`, `plugins/menu/Menu.qml`).
+2. `omarchy-floating-bar`'s README, "Known limitation" -- two `sudoedit`
+   snippets (`plugins/notifications/Service.qml`, `Ui/KeyboardPanel.qml`).
+
+An Omarchy update to any of those six files silently drops the edit --
+reapply from the README if blur stops dimming the shell, or if toasts/
+panels start overlapping the floating bar again.
 
 ## About "keeping this updated with Omarchy"
 

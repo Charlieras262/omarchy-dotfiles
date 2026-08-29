@@ -10,12 +10,17 @@
 #     left/right monitor
 #   - Blur + translucency across all Omarchy shell surfaces (bar, menu,
 #     notifications, popups, tooltip), taller bar, no menu button in the bar
+#   - Input tweaks: intl keyboard variant, numlock on by default (both
+#     uncommented in Omarchy's own template, everything else left stock)
 #   - Pill-shaped active-workspace indicator: published as its own plugin,
 #     https://github.com/Charlieras262/omarchy-pill-workspaces -- installed
 #     via `omarchy plugin add`, not copied from this repo
 #   - Floating, rounded-corner bar: published as its own plugin,
 #     https://github.com/Charlieras262/omarchy-floating-bar -- installed
 #     via `omarchy plugin add`, not copied from this repo
+#   - Rounding/blur tuning bar panel: published as its own plugin,
+#     https://github.com/Charlieras262/omarchy-omablur -- installed via
+#     `omarchy plugin add`, not copied from this repo
 #
 # See README.md for the reasoning behind each piece and for things that may
 # need re-checking (monitor names, app window classes) after a reinstall.
@@ -48,6 +53,7 @@ backup_and_copy "$SCRIPT_DIR/config/hypr/monitors.lua"   "$HYPR_DIR/monitors.lua
 backup_and_copy "$SCRIPT_DIR/config/hypr/bindings.lua"   "$HYPR_DIR/bindings.lua"
 backup_and_copy "$SCRIPT_DIR/config/hypr/hyprland.lua"   "$HYPR_DIR/hyprland.lua"
 backup_and_copy "$SCRIPT_DIR/config/hypr/looknfeel.lua"  "$HYPR_DIR/looknfeel.lua"
+backup_and_copy "$SCRIPT_DIR/config/hypr/input.lua"      "$HYPR_DIR/input.lua"
 
 echo "== Omarchy shell config =="
 backup_and_copy "$SCRIPT_DIR/config/omarchy/shell.json" "$OMARCHY_CFG_DIR/shell.json"
@@ -60,6 +66,10 @@ omarchy plugin add https://github.com/Charlieras262/omarchy-pill-workspaces.git 
 echo "== Floating rounded bar (published plugin) =="
 omarchy plugin add https://github.com/Charlieras262/omarchy-floating-bar.git --enable --yes \
   || echo "warning: 'omarchy plugin add' failed -- install it by hand: omarchy plugin add https://github.com/Charlieras262/omarchy-floating-bar.git --enable"
+
+echo "== Rounding/blur tuning panel (published plugin) =="
+omarchy plugin add https://github.com/Charlieras262/omarchy-omablur.git --enable --yes \
+  || echo "warning: 'omarchy plugin add' failed -- install it by hand: omarchy plugin add https://github.com/Charlieras262/omarchy-omablur.git --enable"
 
 echo
 echo "== Reloading =="
@@ -86,12 +96,22 @@ cat <<'EOF'
    then update the matching o.window(...) call in config/hypr/hyprland.lua.
 
 3. This only restores the files this setup actually touched. It does not
-   touch hypr/input.lua, hypr/autostart.lua, or your theme -- those are
-   assumed to still be Omarchy defaults or handled separately.
+   touch your theme (~/.config/omarchy/themes/... or the active theme
+   selection) -- that's assumed to be handled separately (pick it again
+   from the Omarchy theme menu after a fresh install).
 
 4. omarchy-floating-bar contains a workaround for an Omarchy bug (cloned
    "kind: bar" plugins fail to render -- basecamp/omarchy#8007). Check
    https://github.com/Charlieras262/omarchy-floating-bar for whether it's
    still needed (it becomes redundant once basecamp/omarchy#8146 ships in
    a stable release).
+
+5. Neither omarchy-floating-bar nor omarchy-omablur can safely automate
+   this step, so it's not part of this script either: both need a manual,
+   one-time root edit to a couple of Omarchy's own system files (so
+   notifications/popups clear the floating bar's edge margin, and so the
+   shell dims in sync with blur). Follow the "Known limitation"/"Making
+   blur actually visible" section of each plugin's README and copy the
+   snippets in by hand with sudoedit -- an Omarchy update to those files
+   will silently drop the edit again, so re-check after any major update.
 EOF
