@@ -206,6 +206,17 @@ An Omarchy update to any of those six files silently drops the edit --
 reapply from the README if blur stops dimming the shell, or if toasts/
 panels start overlapping the floating bar again.
 
+### LUKS TPM2 auto-unlock (not in this repo -- see the skill)
+
+The root disk unlocks itself at boot via the TPM (`clevis`), skipping the
+passphrase prompt on the Plymouth "OMARCHY" screen; the manual passphrase
+stays as a fallback keyslot. This is host-specific, security-sensitive state
+(TPM enrollment + an mkinitcpio hook + a LUKS keyslot) that can't be copied
+by `install.sh` -- it has to be re-derived per machine. See
+`.claude/skills/restore-luks-tpm-autounlock/SKILL.md` for the full
+procedure, the exact commands, and a PCR11-vs-PCR7 gotcha that cost a couple
+of failed reboots to track down.
+
 ## About "keeping this updated with Omarchy"
 
 A script that automatically tracks Omarchy's own upstream changes isn't
