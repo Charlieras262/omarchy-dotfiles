@@ -36,5 +36,5 @@ o.bind("SUPER + SHIFT + CTRL + DOWN", "Next workspace on this monitor", hl.dsp.f
 -- Switch monitor focus. Note: CTRL+ALT+TAB / CTRL+ALT+SHIFT+TAB already do
 -- this by default; these are just left/right-labeled duplicates of the same
 -- action for a 2-monitor setup.
-o.bind("SUPER + SHIFT + CTRL + LEFT", "Focus left monitor", hl.dsp.focus({ monitor = "l" }))
-o.bind("SUPER + SHIFT + CTRL + RIGHT", "Focus right monitor", hl.dsp.focus({ monitor = "r" }))
+o.bind("SUPER + SHIFT + CTRL + LEFT", "Focus previous monitor", hl.dsp.focus({ monitor = "-1" }))
+o.bind("SUPER + SHIFT + CTRL + RIGHT", "Focus next monitor", hl.dsp.focus({ monitor = "+1" }))

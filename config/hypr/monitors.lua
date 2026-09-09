@@ -7,7 +7,7 @@ local omarchy_monitor_scale = 1.25
 hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
 -- hl.monitor({ output = "", mode = "preferred", position = "auto", scale = omarchy_monitor_scale })
 -- DP-1: Xiaomi 34" ultrawide, resolución nativa, sin rotar, a la derecha del LG en vertical
-hl.monitor({ output = "DP-1", mode = "3440x1440@144", position = "1440x0", scale = omarchy_monitor_scale })
+hl.monitor({ output = "DP-1", mode = "3440x1440@144", position = "1152x0", scale = omarchy_monitor_scale })
 
 -- DP-2: LG UltraGear 27" en vertical (rotado 90°), a la izquierda
 hl.monitor({ output = "DP-2", mode = "2560x1440@144", position = "0x0", scale = omarchy_monitor_scale, transform = 1 })
