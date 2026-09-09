@@ -2,12 +2,20 @@
 -- List current monitors and supported resolutions with: hyprctl monitors all
 
 local omarchy_gdk_scale = 1
-local omarchy_monitor_scale = 1.25
+local omarchy_monitor_scale = 1
 
 hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
 -- hl.monitor({ output = "", mode = "preferred", position = "auto", scale = omarchy_monitor_scale })
+-- DP-2's physical panel is 2560x1440; rotated 90° its width becomes 1440px.
+-- Hyprland positions monitors in LOGICAL space (physical / scale), so DP-1
+-- must start at that rotated width divided by the same scale, not at 1440
+-- flat -- otherwise a scale != 1 either overlaps them or leaves a dead zone
+-- the cursor can't cross.
+local dp2_rotated_width = 1440
+local dp1_x = math.floor(dp2_rotated_width / omarchy_monitor_scale)
+
 -- DP-1: Xiaomi 34" ultrawide, resolución nativa, sin rotar, a la derecha del LG en vertical
-hl.monitor({ output = "DP-1", mode = "3440x1440@144", position = "1152x0", scale = omarchy_monitor_scale })
+hl.monitor({ output = "DP-1", mode = "3440x1440@144", position = dp1_x .. "x0", scale = omarchy_monitor_scale })
 
 -- DP-2: LG UltraGear 27" en vertical (rotado 90°), a la izquierda
 hl.monitor({ output = "DP-2", mode = "2560x1440@144", position = "0x0", scale = omarchy_monitor_scale, transform = 1 })
