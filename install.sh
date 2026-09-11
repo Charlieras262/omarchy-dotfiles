@@ -71,6 +71,10 @@ echo "== Rounding/blur tuning panel (published plugin) =="
 omarchy plugin add https://github.com/Charlieras262/omarchy-omablur.git --enable --yes \
   || echo "warning: 'omarchy plugin add' failed -- install it by hand: omarchy plugin add https://github.com/Charlieras262/omarchy-omablur.git --enable"
 
+echo "== post-update hook: reapply shell-opacity patches after 'omarchy update' =="
+omarchy hook install post-update "$SCRIPT_DIR/config/omarchy/hooks/post-update.d/reapply-shell-opacity-patches.sh" \
+  || echo "warning: 'omarchy hook install' failed -- install it by hand: omarchy hook install post-update $SCRIPT_DIR/config/omarchy/hooks/post-update.d/reapply-shell-opacity-patches.sh"
+
 echo
 echo "== Reloading =="
 hyprctl reload || echo "warning: 'hyprctl reload' failed -- is Hyprland running?"
@@ -107,11 +111,13 @@ cat <<'EOF'
    a stable release).
 
 5. Neither omarchy-floating-bar nor omarchy-omablur can safely automate
-   this step, so it's not part of this script either: both need a manual,
-   one-time root edit to a couple of Omarchy's own system files (so
-   notifications/popups clear the floating bar's edge margin, and so the
-   shell dims in sync with blur). Follow the "Known limitation"/"Making
-   blur actually visible" section of each plugin's README and copy the
-   snippets in by hand with sudoedit -- an Omarchy update to those files
-   will silently drop the edit again, so re-check after any major update.
+   the FIRST application of this step: both need a manual, one-time root
+   edit to a couple of Omarchy's own system files (so notifications/popups
+   clear the floating bar's edge margin, and so the shell dims in sync
+   with blur). Follow the "Known limitation"/"Making blur actually
+   visible" section of each plugin's README and copy the snippets in by
+   hand with sudoedit. A `post-update` hook (installed above) reapplies
+   the same edits automatically after every `omarchy update`, since an
+   update silently drops them -- but it still needs that first manual
+   pass on a fresh install, before any patch exists to reapply.
 EOF
