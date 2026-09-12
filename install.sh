@@ -3,7 +3,11 @@
 # Safe to re-run: it backs up whatever is already in place before overwriting.
 #
 # What this restores:
-#   - Workspaces 1/3/5 pinned to DP-1, 2/4/6 pinned to DP-2 (persistent)
+#   - Auto-detected monitor layout: whichever known monitor (AOC/LG/Xiaomi)
+#     is connected gets matched by EDID description (not DP-N port name), so
+#     cable/port swaps and monitor substitutions (e.g. one going out for
+#     repair) just work. Workspaces 1/3/5 pinned to the vertical monitor,
+#     2/4/6 to the horizontal one (persistent)
 #   - App-to-workspace window rules (terminal/browser/steam/dota2/discord/
 #     whatsapp/windows-vm) + Steam main window forced to tile
 #   - Extra keybinds: cycle workspaces on the current monitor, focus
@@ -88,10 +92,11 @@ omarchy restart shell || echo "warning: 'omarchy restart shell' failed"
 cat <<'EOF'
 
 == Done. Please double-check by hand ==
-1. Monitor names may differ on new/replaced hardware:
-     hyprctl monitors all
-   If your outputs aren't DP-1/DP-2, edit config/hypr/monitors.lua's
-   hl.workspace_rule() monitor fields (and the hl.monitor() calls) to match.
+1. Monitor layout is matched by EDID description (see the KNOWN table at
+   the top of config/hypr/monitors.lua), not by DP-N port name, so cable/
+   port changes and swapping AOC<->Xiaomi as the LG's partner need no edits.
+   A genuinely new/replacement monitor does need one: find its description
+   with `hyprctl monitors all` and add it to KNOWN.
 
 2. Window-rule class/title matches can drift with app updates. If Dota 2,
    WhatsApp, or the Windows VM stop landing on their assigned workspace,
