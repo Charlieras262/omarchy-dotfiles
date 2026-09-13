@@ -16,6 +16,12 @@
 #     notifications, popups, tooltip), taller bar, no menu button in the bar
 #   - Input tweaks: intl keyboard variant, numlock on by default (both
 #     uncommented in Omarchy's own template, everything else left stock)
+#   - Windows VM launch wrapper: using the VM's SMB shared folder from inside
+#     Windows resets ~/Windows to mode 2700 (setgid), which trips
+#     omarchy-windows-vm's own mount-safety check and makes the next launch
+#     fail instantly. The wrapper clears that bit (no sudo needed, Charlie
+#     owns the folder) before every launch; the .desktop launcher (Super +
+#     Space) points at it instead of omarchy-windows-vm directly.
 #   - Pill-shaped active-workspace indicator: published as its own plugin,
 #     https://github.com/Charlieras262/omarchy-pill-workspaces -- installed
 #     via `omarchy plugin add`, not copied from this repo
@@ -34,6 +40,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HYPR_DIR="$HOME/.config/hypr"
 OMARCHY_CFG_DIR="$HOME/.config/omarchy"
+LOCAL_BIN_DIR="$HOME/.local/bin"
+LOCAL_APPS_DIR="$HOME/.local/share/applications"
 BACKUP_SUFFIX=".bak.$(date +%s)"
 
 if ! command -v omarchy >/dev/null 2>&1; then
@@ -62,6 +70,15 @@ backup_and_copy "$SCRIPT_DIR/config/hypr/input.lua"      "$HYPR_DIR/input.lua"
 echo "== Omarchy shell config =="
 backup_and_copy "$SCRIPT_DIR/config/omarchy/shell.json" "$OMARCHY_CFG_DIR/shell.json"
 backup_and_copy "$SCRIPT_DIR/config/omarchy/shell.toml" "$OMARCHY_CFG_DIR/shell.toml"
+
+echo "== Windows VM launch wrapper =="
+backup_and_copy "$SCRIPT_DIR/local/bin/omarchy-windows-vm-launch-fixed" "$LOCAL_BIN_DIR/omarchy-windows-vm-launch-fixed"
+chmod +x "$LOCAL_BIN_DIR/omarchy-windows-vm-launch-fixed"
+if [[ -f "$LOCAL_APPS_DIR/windows-vm.desktop" ]]; then
+  backup_and_copy "$SCRIPT_DIR/local/share/applications/windows-vm.desktop" "$LOCAL_APPS_DIR/windows-vm.desktop"
+else
+  echo "note: windows-vm.desktop not found -- run 'omarchy windows vm install' first, then re-run this script to point its launcher at the wrapper"
+fi
 
 echo "== Pill workspace indicator (published plugin) =="
 omarchy plugin add https://github.com/Charlieras262/omarchy-pill-workspaces.git --enable --yes \

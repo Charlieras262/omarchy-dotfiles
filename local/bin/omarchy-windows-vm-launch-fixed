@@ -1,0 +1,13 @@
+#!/bin/bash
+# Wrapper around `omarchy-windows-vm launch`: using the Windows VM's shared
+# folder from inside Windows resets ~/Windows's permissions to include the
+# setgid bit (mode 2700), which trips omarchy-windows-vm's own mount-safety
+# check (it requires exactly 700) and makes the next launch fail instantly
+# with "Failed to start Windows VM!". No sudo needed -- Charlie owns the
+# directory, chmod on your own files never requires root.
+
+if [[ -d "$HOME/Windows" ]]; then
+  chmod g-s "$HOME/Windows" 2>/dev/null
+fi
+
+exec omarchy-windows-vm launch "$@"
