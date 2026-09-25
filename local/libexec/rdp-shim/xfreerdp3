@@ -7,7 +7,7 @@
 args=()
 for a in "$@"; do
   if [[ $a == "/sound" ]]; then
-    args+=("/sound:sys:pulse,latency:50")
+    args+=("/sound:sys:pulse,latency:120")
   else
     args+=("$a")
   fi
