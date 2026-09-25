@@ -74,6 +74,10 @@ backup_and_copy "$SCRIPT_DIR/config/omarchy/shell.toml" "$OMARCHY_CFG_DIR/shell.
 echo "== Windows VM launch wrapper =="
 backup_and_copy "$SCRIPT_DIR/local/bin/omarchy-windows-vm-launch-fixed" "$LOCAL_BIN_DIR/omarchy-windows-vm-launch-fixed"
 chmod +x "$LOCAL_BIN_DIR/omarchy-windows-vm-launch-fixed"
+# xfreerdp3 shim: swaps the launcher's bare `/sound` for a low-latency pulse
+# target (fixes multi-second audio delay); only reachable via the wrapper.
+backup_and_copy "$SCRIPT_DIR/local/libexec/rdp-shim/xfreerdp3" "$HOME/.local/libexec/rdp-shim/xfreerdp3"
+chmod +x "$HOME/.local/libexec/rdp-shim/xfreerdp3"
 if [[ -f "$LOCAL_APPS_DIR/windows-vm.desktop" ]]; then
   backup_and_copy "$SCRIPT_DIR/local/share/applications/windows-vm.desktop" "$LOCAL_APPS_DIR/windows-vm.desktop"
 else

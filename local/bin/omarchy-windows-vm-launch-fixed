@@ -5,9 +5,13 @@
 # check (it requires exactly 700) and makes the next launch fail instantly
 # with "Failed to start Windows VM!". No sudo needed -- Charlie owns the
 # directory, chmod on your own files never requires root.
+#
+# Also puts the xfreerdp3 shim first on PATH so the launcher's bare `/sound`
+# becomes a low-latency pulse target (fixes multi-second audio delay).
 
 if [[ -d "$HOME/Windows" ]]; then
   chmod g-s "$HOME/Windows" 2>/dev/null
 fi
 
+export PATH="$HOME/.local/libexec/rdp-shim:$PATH"
 exec omarchy-windows-vm launch "$@"
