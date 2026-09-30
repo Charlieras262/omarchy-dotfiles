@@ -38,3 +38,9 @@ o.bind("SUPER + SHIFT + CTRL + DOWN", "Next workspace on this monitor", hl.dsp.f
 -- action for a 2-monitor setup.
 o.bind("SUPER + SHIFT + CTRL + LEFT", "Focus previous monitor", hl.dsp.focus({ monitor = "-1" }))
 o.bind("SUPER + SHIFT + CTRL + RIGHT", "Focus next monitor", hl.dsp.focus({ monitor = "+1" }))
+
+-- SUPER+J is `togglesplit`, which only exists in the dwindle layout; on a
+-- scrolling workspace (e.g. 5) it raises "no such layoutmsg for scrolling".
+-- Only send it when the active workspace is actually dwindle.
+hl.unbind("SUPER + J")
+o.bind("SUPER + J", "Toggle window split (dwindle only)", "sh -c '[ \"$(hyprctl activeworkspace -j | jq -r .tiledLayout)\" = dwindle ] && hyprctl dispatch \"hl.dsp.layout(\\\"togglesplit\\\")\"'")
