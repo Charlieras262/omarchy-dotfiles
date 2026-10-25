@@ -101,7 +101,7 @@ lost by a plain overwrite.
 
 Omarchy ships workspace animations disabled. This turns them on with a
 macOS-like feel: `slidefade` (slide + fade) on a bezier with a slight
-overshoot (`0.05, 0.9, 0.1, 1.05`), `speed = 3.5` (Hyprland speed is in
+overshoot (`0.05, 0.9, 0.1, 1.05`), `speed = 4` (Hyprland speed is in
 units of 100 ms, so higher is slower). Lives in the user file, outside the
 omablur marked block, so the plugin never rewrites it.
 

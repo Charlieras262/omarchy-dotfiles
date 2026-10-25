@@ -62,7 +62,7 @@ hl.layer_rule({ match = { namespace = "^omarchy-.*$" }, blur = true, blur_popups
 
 -- macOS-style workspace switching: slide + fade with a slight overshoot.
 hl.curve("mybezier", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 3.5, bezier = "mybezier", style = "slidefade" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 4, bezier = "mybezier", style = "slidefade" })
 
 -- BEGIN charlieras262.omablur
 hl.config({
