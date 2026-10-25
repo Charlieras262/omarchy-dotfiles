@@ -58,7 +58,7 @@ hl.config({
 -- })
 -- Blur + see-through everywhere the Omarchy shell draws a surface: bar,
 -- notifications, menus, popups, OSD, polkit prompts, etc.
-hl.layer_rule({ match = { namespace = "^omarchy-.*$" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
+hl.layer_rule({ match = { namespace = "^omarchy-.*$" }, blur = true, blur_popups = true, ignore_alpha = 0.2 })
 
 -- macOS-style workspace switching: slide + fade with a slight overshoot.
 hl.curve("mybezier", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })

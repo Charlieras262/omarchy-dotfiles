@@ -115,16 +115,18 @@ omablur marked block, so the plugin never rewrites it.
   default, kept as the fallback for a fresh install with that plugin not
   yet added), plus a Hyprland layer
   rule: `hl.layer_rule({ match = { namespace = "^omarchy-.*$" }, blur = true,
-  blur_popups = true, ignore_alpha = 0.5 })`. The namespace regex covers
+  blur_popups = true, ignore_alpha = 0.2 })`. The namespace regex covers
   every Omarchy shell surface (bar, menu, notifications, OSD, polkit,
   clipboard, emojis, ...) in one rule.
-- `ignore_alpha = 0.5` is a threshold, not a toggle: pixels of a layer
+- `ignore_alpha = 0.2` is a threshold, not a toggle: pixels of a layer
   surface with alpha below it are excluded from blur, at/above it are
-  blurred. This matters because the root/system menu draws a full-screen
-  dim "scrim" *and* the menu box in the same surface -- without separating
+  blurred. (It was 0.5, but on Hyprland 0.56 that skipped the popups once
+  omablur's shell patch made them translucent, so they stayed sharp; 0.2
+  still excludes the scrims, which are at alpha 0.) This matters because
+  the root/system menu draws a full-screen dim "scrim" *and* the menu box in the same surface -- without separating
   their alpha values, the whole screen behind the scrim gets blurred too.
   That's why `[menu] scrim-alpha = 0` in `shell.toml` (fully transparent,
-  well under the 0.5 threshold) while `[menu] background-alpha = 0.62`
+  well under the 0.2 threshold) while `[menu] background-alpha = 0.62`
   (above it, so the box itself blurs). Same fix applied to `[polkit]` and
   `[image-picker]` scrims pre-emptively, since they have the same
   scrim+box structure.
