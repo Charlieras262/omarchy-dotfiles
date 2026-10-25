@@ -60,6 +60,10 @@ hl.config({
 -- notifications, menus, popups, OSD, polkit prompts, etc.
 hl.layer_rule({ match = { namespace = "^omarchy-.*$" }, blur = true, blur_popups = true, ignore_alpha = 0.5 })
 
+-- macOS-style workspace switching: slide + fade with a slight overshoot.
+hl.curve("mybezier", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 3.5, bezier = "mybezier", style = "slidefade" })
+
 -- BEGIN charlieras262.omablur
 hl.config({
   decoration = {

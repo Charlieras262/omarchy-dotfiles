@@ -97,6 +97,14 @@ lost by a plain overwrite.
   the same as Omarchy's stock `CTRL+ALT+TAB` / `CTRL+ALT+SHIFT+TAB`; kept as
   a second binding because the arrow-key scheme was requested specifically.
 
+### Workspace switch animation (`config/hypr/looknfeel.lua`)
+
+Omarchy ships workspace animations disabled. This turns them on with a
+macOS-like feel: `slidefade` (slide + fade) on a bezier with a slight
+overshoot (`0.05, 0.9, 0.1, 1.05`), `speed = 3.5` (Hyprland speed is in
+units of 100 ms, so higher is slower). Lives in the user file, outside the
+omablur marked block, so the plugin never rewrites it.
+
 ### Blur, translucency, and rounding (`config/hypr/looknfeel.lua`,
 `config/omarchy/shell.toml`, `config/omarchy/shell.json`)
 
