@@ -44,3 +44,42 @@ o.bind("SUPER + SHIFT + CTRL + RIGHT", "Focus next monitor", hl.dsp.focus({ moni
 -- Only send it when the active workspace is actually dwindle.
 hl.unbind("SUPER + J")
 o.bind("SUPER + J", "Toggle window split (dwindle only)", "sh -c '[ \"$(hyprctl activeworkspace -j | jq -r .tiledLayout)\" = dwindle ] && hyprctl dispatch \"hl.dsp.layout(\\\"togglesplit\\\")\"'")
+
+-- Dictation keys from before Alt + Space and Right Alt became the defaults.
+-- Remove these lines to give the keys back to applications.
+if o.dictation_installed and o.dictation_installed() then
+  o.bind("SUPER + CTRL + X", "Toggle dictation", "omarchy-dictation toggle")
+  o.bind_hold("F9", "Start dictation (push-to-talk)", "omarchy-dictation start", "Stop dictation (push-to-talk)", "omarchy-dictation stop")
+end
+
+-- Global workspace numbers, as before Omarchy 4.5. Omarchy 4.5 gives every
+-- monitor its own block of ten (LG 1-10, Xiaomi 11-20) and renumbers
+-- workspaces on every reload; this keeps the 1/3/5 (LG) and 2/4/6 (Xiaomi)
+-- pins in hypr/monitors.lua instead. Delete this block to go back to
+-- Omarchy's per-monitor workspaces.
+o.workspaces.reconcile = function() end
+
+for workspace = 1, 10 do
+  local key = "code:" .. tostring(workspace + 9)
+  local id = tostring(workspace)
+  hl.unbind("SUPER + " .. key)
+  hl.unbind("SUPER + SHIFT + " .. key)
+  hl.unbind("SUPER + SHIFT + ALT + " .. key)
+  o.bind("SUPER + " .. key, "Switch to workspace " .. id, hl.dsp.focus({ workspace = id }))
+  o.bind("SUPER + SHIFT + " .. key, "Move window to workspace " .. id, hl.dsp.window.move({ workspace = id }))
+  o.bind("SUPER + SHIFT + ALT + " .. key, "Move window silently to workspace " .. id, hl.dsp.window.move({ workspace = id, follow = false }))
+end
+
+hl.unbind("SUPER + TAB")
+hl.unbind("SUPER + SHIFT + TAB")
+hl.unbind("SUPER + CTRL + TAB")
+o.bind("SUPER + TAB", "Next workspace", hl.dsp.focus({ workspace = "e+1" }))
+o.bind("SUPER + SHIFT + TAB", "Previous workspace", hl.dsp.focus({ workspace = "e-1" }))
+o.bind("SUPER + CTRL + TAB", "Former workspace", hl.dsp.focus({ workspace = "previous" }))
+
+-- Moving a workspace to another monitor keeps its number.
+for _, direction in ipairs({ "LEFT", "RIGHT", "UP", "DOWN" }) do
+  hl.unbind("SUPER + SHIFT + ALT + " .. direction)
+  o.bind("SUPER + SHIFT + ALT + " .. direction, "Move workspace to " .. direction:lower() .. " monitor",
+    hl.dsp.workspace.move({ monitor = direction:sub(1, 1):lower() }))
+end

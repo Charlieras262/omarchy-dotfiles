@@ -14,7 +14,7 @@ hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
 local KNOWN = {
   aoc =    { match = "AOC 24G2W1G3",              mode = "1920x1080@144", height = 1080 },
   lg =     { match = "LG Electronics LG ULTRAGEAR", mode = "2560x1440@144", height = 1440 },
-  xiaomi = { match = "Xiaomi Corporation Mi monitor", mode = "3440x1440@144", height = 1440 },
+  xiaomi = { match = "Xiaomi Corporation Mi monitor", mode = "3440x1440@180", height = 1440 },
 }
 
 local function find(monitors, key)
