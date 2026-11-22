@@ -114,11 +114,11 @@ if command -v openrgb >/dev/null 2>&1; then
   systemctl --user enable --now openrgb-server.service openrgb-theme.service \
     || echo "warning: could not enable the openrgb user units"
   # AULA F99 Pro side bar (2.4G receiver): closest of its 7 fixed colours to the theme accent
-  backup_and_copy "$SCRIPT_DIR/local/bin/aula-bar" "$LOCAL_BIN_DIR/aula-bar"
-  chmod +x "$LOCAL_BIN_DIR/aula-bar"
-  backup_and_copy "$SCRIPT_DIR/config/omarchy/hooks/theme-set.d/21-aula-bar" "$OMARCHY_CFG_DIR/hooks/theme-set.d/21-aula-bar"
-  chmod +x "$OMARCHY_CFG_DIR/hooks/theme-set.d/21-aula-bar"
-  # Root-owned pieces (asks for your sudo password): udev rule so aula-bar needs no sudo,
+  backup_and_copy "$SCRIPT_DIR/local/bin/aula-sync" "$LOCAL_BIN_DIR/aula-sync"
+  chmod +x "$LOCAL_BIN_DIR/aula-sync"
+  backup_and_copy "$SCRIPT_DIR/config/omarchy/hooks/theme-set.d/21-aula-sync" "$OMARCHY_CFG_DIR/hooks/theme-set.d/21-aula-sync"
+  chmod +x "$OMARCHY_CFG_DIR/hooks/theme-set.d/21-aula-sync"
+  # Root-owned pieces (asks for your sudo password): udev rule so aula-sync needs no sudo,
   # and the shutdown-off unit (turns off the board/mouse via OpenRGB and the keyboard bar).
   off_unit="$(mktemp)"
   sed "s|@HOME@|$HOME|g" "$SCRIPT_DIR/system/openrgb-off.service" > "$off_unit"

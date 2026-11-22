@@ -234,16 +234,24 @@ active theme's accent, read from `~/.local/state/omarchy/current/theme/keyboard.
   hardware. If a device still glows after this, the BIOS option (LEDs in
   sleep/shutdown = Off, or ErP) is the fallback.
 
-**AULA F99 Pro side bar** (`local/bin/aula-bar`, `config/omarchy/hooks/theme-set.d/21-aula-bar`,
-`system/61-aula-f99pro.rules`): only the little bar next to Esc is synced, and only
-approximately. Over the 2.4G receiver (3554:fa09; the wired USB mode has no LED control) its config
-block has the bar mode at byte [28] (0 off, 1-2 colour cycle, 3 fixed, 4 breathing) and a colour
-index at [29] into 7 *factory-fixed* colours (red, green, blue, yellow, pink, cyan, white).
-Writing the RGB table does not change them, so `aula-bar theme` picks the nearest of the 7 to
-the theme accent and writes just those two bytes, only when they changed (each write reboots the
-keyboard for a moment). `aula-bar off` runs at shutdown from `openrgb-off.service`. The udev rule
-gives the logged-in user access to the receiver so no sudo is needed. The keys themselves are not
-synced: their effect/colour bytes were never mapped (OpenRGB 1.1 does not drive this keyboard).
+**AULA F99 Pro** (`local/bin/aula-sync`, `config/omarchy/hooks/theme-set.d/21-aula-sync`,
+`system/61-aula-f99pro.rules`): the keyboard follows the theme over its 2.4G receiver (3554:fa09;
+the wired USB mode has no LED control, and OpenRGB 1.1 does not drive it). Reverse-engineered
+by reading its config (cmd 0x44 / 0x49) before and after changing things in the vendor app
+(which runs under Wine in a separate prefix):
+
+- **Side bar next to Esc:** only 7 factory-fixed colours (red, green, blue, yellow, pink, cyan,
+  white), so `aula-sync theme` picks the nearest to the theme accent. Mode is byte [28] of the
+  LED config (0 off, 1-2 colour cycle, 3 fixed, 4 breathing), colour index is [29].
+- **Whole keyboard:** the exact accent (gamma-corrected like OpenRGB), written to the colour of
+  effect 1 (Fixed_on): RGB table, block 1, slot 0 (blocks are 21 bytes, indexed by effect id).
+  The effect itself cannot be changed from here, so the keyboard must be set to **Fixed_on with
+  "Colorful" off** (FN + \ or the AULA app) -- if it shows a colour cycle, that's the setting.
+- Writes only happen when something changed (each one reboots the keyboard for a moment).
+  `aula-sync off` (run at shutdown from `openrgb-off.service`) turns the bar off; there is no
+  known command to turn the main keys off. The udev rule lets the logged-in user talk to the
+  receiver without sudo. Don't write past the 21-byte blocks of the table: the 7 bytes after
+  them are the device identity.
 
 ### LUKS TPM2 auto-unlock (not in this repo -- see the skill)
 

@@ -6,7 +6,7 @@ Wants=openrgb-server.service
 [Service]
 Type=oneshot
 ExecStart=%h/.local/bin/openrgb-theme
-ExecStart=-%h/.local/bin/aula-bar theme
+ExecStart=-%h/.local/bin/aula-sync theme
 
 [Install]
 WantedBy=graphical-session.target

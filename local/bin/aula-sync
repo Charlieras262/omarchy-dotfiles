@@ -1,0 +1,181 @@
+#!/usr/bin/env python3
+"""AULA F99 Pro (receptor 2.4G 3554:fa09): sincroniza sus luces con el tema de Omarchy.
+
+  aula-sync theme   barra junto a Esc = color de fabrica mas cercano al acento del tema
+                    teclado completo  = color exacto del acento (con gamma, como OpenRGB)
+  aula-sync off     apaga la barra (el teclado completo no tiene comando de apagado conocido)
+
+Barra: solo admite 7 colores de fabrica; modo en el byte [28] de la config LED (0 apagada,
+3 fija) e indice de color en [29] (rojo, verde, azul, amarillo, rosa, celeste, blanco).
+Teclado completo: el color del efecto 1 (Fixed_on) vive en la tabla RGB (cmd 0x49/0x09), bloque 1,
+ranura 0. El efecto en si NO se puede cambiar desde aqui: el teclado debe estar en Fixed_on con
+la opcion Colorful desactivada (se elige con FN o con la app de AULA).
+Solo se escribe si algo cambia (cada escritura reinicia el teclado un instante). Si el teclado no
+esta en modo 2.4G o no responde, sale sin error para no romper el hook. Necesita acceso a
+/dev/hidrawN del receptor (ver system/61-aula-f99pro.rules).
+"""
+import colorsys, fcntl, os, select, sys, time
+
+REPORT_ID, PACKET, GET_LED, PUT_LED = 0x13, 20, 0x44, 0x04
+GET_RGB, PUT_RGB = 0x49, 0x09
+MAIN_BLOCK = 1  # efecto Fixed_on
+BAR_MODE, BAR_COLOR = 28, 29
+HUES = {0: 0, 1: 120, 2: 240, 3: 60, 4: 300, 5: 180}  # indice -> matiz; 6 = blanco
+
+
+def nearest_index(hexcolor):
+    r, g, b = (int(hexcolor[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    if s < 0.18:
+        return 6  # casi sin color: blanco
+    deg = h * 360
+    return min(HUES, key=lambda i: min(abs(deg - HUES[i]), 360 - abs(deg - HUES[i])))
+
+
+def gamma_rgb(hexcolor):
+    """Los LEDs no son lineales: gamma 2.2 y normalizar (igual que openrgb-theme)."""
+    c = [(int(hexcolor[i:i + 2], 16) / 255) ** 2.2 for i in (0, 2, 4)]
+    m = max(c) or 1
+    return bytes(round(x / m * 255) for x in c)
+
+
+def find_node():
+    base = "/sys/class/hidraw"
+    for name in sorted(os.listdir(base)):
+        dev = os.path.realpath(f"{base}/{name}/device")
+        try:
+            uevent = open(f"{dev}/uevent").read().upper()
+            desc = open(f"{dev}/report_descriptor", "rb").read()
+        except OSError:
+            continue
+        if "00003554:0000FA09" in uevent and desc[:3] == bytes([0x06, 0x02, 0xFF]):
+            return f"/dev/{name}"
+    return None
+
+
+def drain(fd):
+    for _ in range(100):
+        if select.select([fd], [], [], 0.005)[0]:
+            os.read(fd, 1024)
+        else:
+            break
+
+
+def read_cmd(fd, cmd, size, tries=3):
+    """Lee un bloque paginado; reintenta si llega incompleto o el teclado duerme."""
+    for _ in range(tries):
+        drain(fd)
+        buf = bytearray(PACKET)
+        buf[0], buf[1] = REPORT_ID, cmd
+        os.write(fd, bytes(buf))
+        data, end = bytearray(), time.time() + 3.0
+        while time.time() < end:
+            if select.select([fd], [], [], 0.1)[0]:
+                p = os.read(fd, 64)
+                if len(p) >= 5 and p[0] == REPORT_ID:
+                    data.extend(p[5:5 + min(p[4], 14)])
+                end = time.time() + 0.3
+        if len(data) == size:
+            return bytes(data)
+        time.sleep(0.7)
+    return None
+
+
+def read_led(fd, tries=3):
+    for _ in range(tries):
+        drain(fd)
+        buf = bytearray(PACKET)
+        buf[0], buf[1] = REPORT_ID, GET_LED
+        os.write(fd, bytes(buf))
+        data, end = bytearray(), time.time() + 3.0
+        while time.time() < end:
+            if select.select([fd], [], [], 0.1)[0]:
+                p = os.read(fd, 64)
+                if len(p) >= 5 and p[0] == REPORT_ID:
+                    data.extend(p[5:5 + min(p[4], 14)])
+                end = time.time() + 0.3
+        if len(data) == 128 and data[-2:] == b"\x5a\xa5":
+            return bytes(data)
+        time.sleep(0.7)
+    return None
+
+
+def write_paged(fd, cmd, data):
+    drain(fd)
+    total = (len(data) + 13) // 14
+    for i in range(total):
+        chunk = data[i * 14:(i + 1) * 14]
+        buf = bytearray(PACKET)
+        buf[0], buf[1], buf[2], buf[3], buf[4] = REPORT_ID, cmd, total, i, len(chunk)
+        buf[5:5 + len(chunk)] = chunk
+        os.write(fd, bytes(buf))
+        time.sleep(0.02)
+        for _ in range(3):
+            if select.select([fd], [], [], 0.05)[0]:
+                os.read(fd, 64)
+            else:
+                break
+    time.sleep(0.1)
+
+
+def main():
+    if len(sys.argv) != 2 or sys.argv[1] not in ("theme", "off"):
+        sys.exit(__doc__)
+    action = sys.argv[1]
+    if action == "theme":
+        path = os.path.expanduser("~/.local/state/omarchy/current/theme/keyboard.rgb")
+        try:
+            hexcolor = open(path).read().strip().lstrip("#")
+            idx = nearest_index(hexcolor)
+            main_rgb = gamma_rgb(hexcolor)
+        except (OSError, ValueError):
+            print("aula-sync: no pude leer el color del tema", file=sys.stderr)
+            return
+    lock = open(os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "aula-sync.lock"), "w")
+    end = time.time() + 20
+    while True:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except OSError:
+            if time.time() > end:
+                return
+            time.sleep(0.2)
+    node = find_node()
+    if not node:
+        print("aula-sync: receptor 2.4G no encontrado", file=sys.stderr)
+        return
+    try:
+        fd = os.open(node, os.O_RDWR)
+    except OSError as e:
+        print(f"aula-sync: sin acceso a {node}: {e}", file=sys.stderr)
+        return
+    try:
+        cur = read_led(fd)
+        if cur is None:
+            print("aula-sync: el teclado no responde (dormido o no esta en 2.4G)", file=sys.stderr)
+            return
+        new = bytearray(cur)
+        if action == "theme":
+            new[BAR_MODE], new[BAR_COLOR] = 3, idx
+        else:
+            new[BAR_MODE] = 0
+        led_changed = new[BAR_MODE] != cur[BAR_MODE] or new[BAR_COLOR] != cur[BAR_COLOR]
+
+        table = None
+        if action == "theme":
+            rgb = read_cmd(fd, GET_RGB, 490)
+            if rgb is not None and rgb[MAIN_BLOCK * 21:MAIN_BLOCK * 21 + 3] != main_rgb:
+                table = bytearray(rgb)
+                table[MAIN_BLOCK * 21:MAIN_BLOCK * 21 + 3] = main_rgb  # solo 3 bytes; la cola no se toca
+        if table is not None:
+            write_paged(fd, PUT_RGB, bytes(table))
+            time.sleep(0.3)
+            write_paged(fd, PUT_LED, bytes(new))  # la config LED va al final y hace que se aplique
+        elif led_changed:
+            write_paged(fd, PUT_LED, bytes(new))
+    finally:
+        os.close(fd)
+
+
+main()
