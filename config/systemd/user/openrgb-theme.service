@@ -1,0 +1,11 @@
+[Unit]
+Description=Aplicar color del tema de Omarchy al RGB
+After=openrgb-server.service
+Wants=openrgb-server.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/openrgb-theme
+
+[Install]
+WantedBy=graphical-session.target

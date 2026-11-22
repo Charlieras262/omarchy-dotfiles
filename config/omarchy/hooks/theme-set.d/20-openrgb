@@ -1,0 +1,3 @@
+#!/bin/bash
+# Sincroniza el RGB con el color del tema; en segundo plano para no retrasar el cambio de tema.
+setsid -f "$HOME/.local/bin/openrgb-theme" >/dev/null 2>&1

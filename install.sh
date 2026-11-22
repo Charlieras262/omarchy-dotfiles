@@ -32,6 +32,12 @@
 #     https://github.com/Charlieras262/omarchy-omablur -- installed via
 #     `omarchy plugin add`, not copied from this repo
 #
+#   - OpenRGB sync: all RGB (board + Razer mouse) follows the active Omarchy
+#     theme's accent colour (keyboard.rgb), applied at login and on every
+#     theme change (theme-set hook), and switched off at shutdown (system
+#     unit, needs sudo). An always-on `openrgb --server` user unit keeps
+#     theme changes near-instant (no device re-detection each time)
+#
 # See README.md for the reasoning behind each piece and for things that may
 # need re-checking (monitor names, app window classes) after a reinstall.
 
@@ -95,6 +101,28 @@ omarchy plugin add https://github.com/Charlieras262/omarchy-floating-bar.git --e
 echo "== Rounding/blur tuning panel (published plugin) =="
 omarchy plugin add https://github.com/Charlieras262/omarchy-omablur.git --enable --yes \
   || echo "warning: 'omarchy plugin add' failed -- install it by hand: omarchy plugin add https://github.com/Charlieras262/omarchy-omablur.git --enable"
+
+echo "== OpenRGB theme sync =="
+if command -v openrgb >/dev/null 2>&1; then
+  backup_and_copy "$SCRIPT_DIR/local/bin/openrgb-theme" "$LOCAL_BIN_DIR/openrgb-theme"
+  chmod +x "$LOCAL_BIN_DIR/openrgb-theme"
+  backup_and_copy "$SCRIPT_DIR/config/omarchy/hooks/theme-set.d/20-openrgb" "$OMARCHY_CFG_DIR/hooks/theme-set.d/20-openrgb"
+  chmod +x "$OMARCHY_CFG_DIR/hooks/theme-set.d/20-openrgb"
+  backup_and_copy "$SCRIPT_DIR/config/systemd/user/openrgb-server.service" "$HOME/.config/systemd/user/openrgb-server.service"
+  backup_and_copy "$SCRIPT_DIR/config/systemd/user/openrgb-theme.service" "$HOME/.config/systemd/user/openrgb-theme.service"
+  systemctl --user daemon-reload
+  systemctl --user enable --now openrgb-server.service openrgb-theme.service \
+    || echo "warning: could not enable the openrgb user units"
+  # Shutdown-off unit lives in /etc, so it needs root (asks for your sudo password).
+  if sudo install -m644 "$SCRIPT_DIR/system/openrgb-off.service" /etc/systemd/system/openrgb-off.service \
+     && sudo systemctl daemon-reload && sudo systemctl enable --now openrgb-off.service; then
+    echo "installed openrgb-off.service"
+  else
+    echo "warning: openrgb-off.service not installed -- run: sudo install -m644 $SCRIPT_DIR/system/openrgb-off.service /etc/systemd/system/ && sudo systemctl enable --now openrgb-off.service"
+  fi
+else
+  echo "note: openrgb not installed (pacman -S openrgb) -- skipping RGB sync"
+fi
 
 echo "== post-update hook: reapply shell-opacity patches after 'omarchy update' =="
 omarchy hook install post-update "$SCRIPT_DIR/config/omarchy/hooks/post-update.d/reapply-shell-opacity-patches.sh" \

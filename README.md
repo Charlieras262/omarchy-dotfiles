@@ -216,6 +216,24 @@ An Omarchy update to any of those six files silently drops the edit --
 reapply from the README if blur stops dimming the shell, or if toasts/
 panels start overlapping the floating bar again.
 
+### OpenRGB synced to the Omarchy theme (`local/bin/openrgb-theme`, `config/systemd/user/`, `system/`)
+
+All RGB (Gigabyte Z690 AORUS board + Razer Basilisk V3) is one colour: the
+active theme's accent, read from `~/.local/state/omarchy/current/theme/keyboard.rgb`.
+
+- `openrgb-theme` applies it (or `openrgb-theme off`). Raw theme colours look
+  washed-out/pinkish on LEDs (G/B channels are much stronger than they look on
+  screen), so it applies gamma 2.2 and normalizes so the brightest channel is 255.
+- `hooks/theme-set.d/20-openrgb` runs it on every theme change, in the background.
+- `openrgb-server.service` (user) keeps `openrgb --server` running so the
+  script only talks to it (~0.05 s) instead of re-detecting devices (~1.5 s).
+  `openrgb-theme.service` (user, oneshot) applies the colour at login.
+- `system/openrgb-off.service` (root, installed to `/etc/systemd/system/`)
+  runs `openrgb --color 000000` on stop, i.e. at shutdown. The lights
+  stayed on after poweroff before because "direct" mode isn't stored in the
+  hardware. If a device still glows after this, the BIOS option (LEDs in
+  sleep/shutdown = Off, or ErP) is the fallback.
+
 ### LUKS TPM2 auto-unlock (not in this repo -- see the skill)
 
 The root disk unlocks itself at boot via the TPM (`clevis`), skipping the

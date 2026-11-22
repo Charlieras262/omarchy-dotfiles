@@ -1,0 +1,18 @@
+#!/bin/bash
+# Pone todo el RGB al color de acento del tema activo de Omarchy, o lo apaga con "off".
+# Usa el servidor OpenRGB si esta activo (rapido); si no, detecta dispositivos por su cuenta.
+color_file="$HOME/.local/state/omarchy/current/theme/keyboard.rgb"
+if [[ ${1:-} == off ]]; then
+  hex=000000
+else
+  raw=$(tr -d '#[:space:]' < "$color_file" 2>/dev/null)
+  [[ $raw =~ ^[0-9A-Fa-f]{6}$ ]] || { echo "color invalido en $color_file" >&2; exit 1; }
+  # Los LEDs no son lineales: gamma 2.2 y normalizar para que el color se vea como en pantalla.
+  hex=$(python3 -I -c '
+import sys
+c=[(int(sys.argv[1][i:i+2],16)/255)**2.2 for i in (0,2,4)]
+m=max(c) or 1
+print("".join("%02X"%round(x/m*255) for x in c))' "$raw")
+fi
+exec flock -w 30 "${XDG_RUNTIME_DIR:-/tmp}/openrgb-theme.lock" \
+  openrgb --mode static --color "$hex"
