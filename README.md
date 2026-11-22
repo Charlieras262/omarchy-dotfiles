@@ -234,6 +234,17 @@ active theme's accent, read from `~/.local/state/omarchy/current/theme/keyboard.
   hardware. If a device still glows after this, the BIOS option (LEDs in
   sleep/shutdown = Off, or ErP) is the fallback.
 
+**AULA F99 Pro side bar** (`local/bin/aula-bar`, `config/omarchy/hooks/theme-set.d/21-aula-bar`,
+`system/61-aula-f99pro.rules`): only the little bar next to Esc is synced, and only
+approximately. Over the 2.4G receiver (3554:fa09; the wired USB mode has no LED control) its config
+block has the bar mode at byte [28] (0 off, 1-2 colour cycle, 3 fixed, 4 breathing) and a colour
+index at [29] into 7 *factory-fixed* colours (red, green, blue, yellow, pink, cyan, white).
+Writing the RGB table does not change them, so `aula-bar theme` picks the nearest of the 7 to
+the theme accent and writes just those two bytes, only when they changed (each write reboots the
+keyboard for a moment). `aula-bar off` runs at shutdown from `openrgb-off.service`. The udev rule
+gives the logged-in user access to the receiver so no sudo is needed. The keys themselves are not
+synced: their effect/colour bytes were never mapped (OpenRGB 1.1 does not drive this keyboard).
+
 ### LUKS TPM2 auto-unlock (not in this repo -- see the skill)
 
 The root disk unlocks itself at boot via the TPM (`clevis`), skipping the

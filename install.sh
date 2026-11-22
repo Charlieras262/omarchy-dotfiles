@@ -113,13 +113,24 @@ if command -v openrgb >/dev/null 2>&1; then
   systemctl --user daemon-reload
   systemctl --user enable --now openrgb-server.service openrgb-theme.service \
     || echo "warning: could not enable the openrgb user units"
-  # Shutdown-off unit lives in /etc, so it needs root (asks for your sudo password).
-  if sudo install -m644 "$SCRIPT_DIR/system/openrgb-off.service" /etc/systemd/system/openrgb-off.service \
+  # AULA F99 Pro side bar (2.4G receiver): closest of its 7 fixed colours to the theme accent
+  backup_and_copy "$SCRIPT_DIR/local/bin/aula-bar" "$LOCAL_BIN_DIR/aula-bar"
+  chmod +x "$LOCAL_BIN_DIR/aula-bar"
+  backup_and_copy "$SCRIPT_DIR/config/omarchy/hooks/theme-set.d/21-aula-bar" "$OMARCHY_CFG_DIR/hooks/theme-set.d/21-aula-bar"
+  chmod +x "$OMARCHY_CFG_DIR/hooks/theme-set.d/21-aula-bar"
+  # Root-owned pieces (asks for your sudo password): udev rule so aula-bar needs no sudo,
+  # and the shutdown-off unit (turns off the board/mouse via OpenRGB and the keyboard bar).
+  off_unit="$(mktemp)"
+  sed "s|@HOME@|$HOME|g" "$SCRIPT_DIR/system/openrgb-off.service" > "$off_unit"
+  if sudo install -m644 "$SCRIPT_DIR/system/61-aula-f99pro.rules" /etc/udev/rules.d/61-aula-f99pro.rules \
+     && sudo udevadm control --reload-rules && sudo udevadm trigger --subsystem-match=hidraw \
+     && sudo install -m644 "$off_unit" /etc/systemd/system/openrgb-off.service \
      && sudo systemctl daemon-reload && sudo systemctl enable --now openrgb-off.service; then
-    echo "installed openrgb-off.service"
+    echo "installed udev rule + openrgb-off.service"
   else
-    echo "warning: openrgb-off.service not installed -- run: sudo install -m644 $SCRIPT_DIR/system/openrgb-off.service /etc/systemd/system/ && sudo systemctl enable --now openrgb-off.service"
+    echo "warning: root steps failed -- see system/ in the repo (61-aula-f99pro.rules -> /etc/udev/rules.d/, openrgb-off.service with @HOME@ replaced -> /etc/systemd/system/)"
   fi
+  rm -f "$off_unit"
 else
   echo "note: openrgb not installed (pacman -S openrgb) -- skipping RGB sync"
 fi
