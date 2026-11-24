@@ -5,6 +5,9 @@ Wants=openrgb-server.service
 
 [Service]
 Type=oneshot
+# The server opens its port in ~0.1 s but only has the devices ~1.6 s later; polling it while it
+# detects can break detection, so wait a fixed margin instead.
+ExecStartPre=/usr/bin/sleep 4
 ExecStart=%h/.local/bin/openrgb-theme
 
 [Install]
