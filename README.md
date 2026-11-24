@@ -227,7 +227,9 @@ active theme's accent, read from `~/.local/state/omarchy/current/theme/keyboard.
 - `hooks/theme-set.d/20-openrgb` runs it on every theme change, in the background.
 - `openrgb-server.service` (user) keeps `openrgb --server` running so the
   script only talks to it (~0.05 s) instead of re-detecting devices (~1.5 s).
-  `openrgb-theme.service` (user, oneshot) applies the colour at login.
+  `openrgb-theme.service` (user, oneshot) applies the colour at login, after a fixed 4 s wait:
+  the server opens its port in ~0.1 s but only has the devices ~1.6 s later, and polling it
+  while it detects can make it lose a device, so a fixed margin is used instead of a check.
 - **Which `openrgb` binary runs:** the units say `ExecStart=openrgb` (no path). systemd resolves
   bare names through its fixed search path `/usr/local/bin:/usr/bin`, so a locally built binary in
   `/usr/local/bin/openrgb` wins over the packaged `/usr/bin/openrgb`, and deleting it falls back to
