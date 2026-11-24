@@ -253,8 +253,10 @@ requests !3026/!3027). It works with an experimental local controller kept on th
 the model with report 0x13 command 0x05 and paints with the live command 0x88 (report 0x13, 20
 byte packets, checksum = sum of bytes 0-18 in byte 19). The keyboard falls back to its own
 effect when it stops receiving packets, so the controller re-sends the colours every 400 ms
-(1.1 s was not enough: random flicker). That keeps the keyboard awake, so expect more battery
-use than on USB. An earlier `aula-sync` script wrote the colour into the keyboard config instead
+(1.1 s was not enough: random flicker). When every key has the same colour (the normal case
+with a theme) it sends one solid-colour packet instead of a nine-packet frame, which also
+worked without flicker and uses far less airtime. The keepalive keeps the keyboard awake, so
+expect more battery use than on USB. An earlier `aula-sync` script wrote the colour into the keyboard config instead
 (persistent, rebooted the keyboard on every change); it is in this repo's git history (commit
 `a889a09`).
 
