@@ -35,7 +35,8 @@
 #   - OpenRGB sync: all RGB (board + Razer mouse) follows the active Omarchy
 #     theme's accent colour (keyboard.rgb), applied at login and on every
 #     theme change (theme-set hook), and switched off at shutdown (system
-#     unit, needs sudo). An always-on `openrgb --server` user unit keeps
+#     unit, needs sudo). Devices with only a "Direct" mode (e.g. the AULA F99 Pro
+#     keyboard over USB) are driven in that mode. An always-on `openrgb --server` user unit keeps
 #     theme changes near-instant (no device re-detection each time)
 #
 # See README.md for the reasoning behind each piece and for things that may
@@ -113,24 +114,13 @@ if command -v openrgb >/dev/null 2>&1; then
   systemctl --user daemon-reload
   systemctl --user enable --now openrgb-server.service openrgb-theme.service \
     || echo "warning: could not enable the openrgb user units"
-  # AULA F99 Pro side bar (2.4G receiver): closest of its 7 fixed colours to the theme accent
-  backup_and_copy "$SCRIPT_DIR/local/bin/aula-sync" "$LOCAL_BIN_DIR/aula-sync"
-  chmod +x "$LOCAL_BIN_DIR/aula-sync"
-  backup_and_copy "$SCRIPT_DIR/config/omarchy/hooks/theme-set.d/21-aula-sync" "$OMARCHY_CFG_DIR/hooks/theme-set.d/21-aula-sync"
-  chmod +x "$OMARCHY_CFG_DIR/hooks/theme-set.d/21-aula-sync"
-  # Root-owned pieces (asks for your sudo password): udev rule so aula-sync needs no sudo,
-  # and the shutdown-off unit (turns off the board/mouse via OpenRGB and the keyboard bar).
-  off_unit="$(mktemp)"
-  sed "s|@HOME@|$HOME|g" "$SCRIPT_DIR/system/openrgb-off.service" > "$off_unit"
-  if sudo install -m644 "$SCRIPT_DIR/system/61-aula-f99pro.rules" /etc/udev/rules.d/61-aula-f99pro.rules \
-     && sudo udevadm control --reload-rules && sudo udevadm trigger --subsystem-match=hidraw \
-     && sudo install -m644 "$off_unit" /etc/systemd/system/openrgb-off.service \
+  # Root-owned piece (asks for your sudo password): the shutdown-off unit.
+  if sudo install -m644 "$SCRIPT_DIR/system/openrgb-off.service" /etc/systemd/system/openrgb-off.service \
      && sudo systemctl daemon-reload && sudo systemctl enable --now openrgb-off.service; then
-    echo "installed udev rule + openrgb-off.service"
+    echo "installed openrgb-off.service"
   else
-    echo "warning: root steps failed -- see system/ in the repo (61-aula-f99pro.rules -> /etc/udev/rules.d/, openrgb-off.service with @HOME@ replaced -> /etc/systemd/system/)"
+    echo "warning: openrgb-off.service not installed -- run: sudo install -m644 $SCRIPT_DIR/system/openrgb-off.service /etc/systemd/system/ && sudo systemctl enable --now openrgb-off.service"
   fi
-  rm -f "$off_unit"
 else
   echo "note: openrgb not installed (pacman -S openrgb) -- skipping RGB sync"
 fi

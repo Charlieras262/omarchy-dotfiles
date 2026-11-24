@@ -1,3 +1,0 @@
-# Acceso al receptor 2.4G del AULA F99 Pro (3554:fa09) para el usuario con sesion activa,
-# necesario para que local/bin/aula-bar escriba sin sudo.
-SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="fa09", TAG+="uaccess"

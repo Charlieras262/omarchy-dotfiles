@@ -218,7 +218,7 @@ panels start overlapping the floating bar again.
 
 ### OpenRGB synced to the Omarchy theme (`local/bin/openrgb-theme`, `config/systemd/user/`, `system/`)
 
-All RGB (Gigabyte Z690 AORUS board + Razer Basilisk V3) is one colour: the
+All RGB (Gigabyte Z690 AORUS board, Razer Basilisk V3 and the AULA F99 Pro keyboard) is one colour: the
 active theme's accent, read from `~/.local/state/omarchy/current/theme/keyboard.rgb`.
 
 - `openrgb-theme` applies it (or `openrgb-theme off`). Raw theme colours look
@@ -239,24 +239,14 @@ active theme's accent, read from `~/.local/state/omarchy/current/theme/keyboard.
   hardware. If a device still glows after this, the BIOS option (LEDs in
   sleep/shutdown = Off, or ErP) is the fallback.
 
-**AULA F99 Pro** (`local/bin/aula-sync`, `config/omarchy/hooks/theme-set.d/21-aula-sync`,
-`system/61-aula-f99pro.rules`): the keyboard follows the theme over its 2.4G receiver (3554:fa09;
-the wired USB mode has no LED control, and OpenRGB 1.1 does not drive it). Reverse-engineered
-by reading its config (cmd 0x44 / 0x49) before and after changing things in the vendor app
-(which runs under Wine in a separate prefix):
-
-- **Side bar next to Esc:** only 7 factory-fixed colours (red, green, blue, yellow, pink, cyan,
-  white), so `aula-sync theme` picks the nearest to the theme accent. Mode is byte [28] of the
-  LED config (0 off, 1-2 colour cycle, 3 fixed, 4 breathing), colour index is [29].
-- **Whole keyboard:** the exact accent (gamma-corrected like OpenRGB), written to the colour of
-  effect 1 (Fixed_on): RGB table, block 1, slot 0 (blocks are 21 bytes, indexed by effect id).
-  The effect itself cannot be changed from here, so the keyboard must be set to **Fixed_on with
-  "Colorful" off** (FN + \ or the AULA app) -- if it shows a colour cycle, that's the setting.
-- Writes only happen when something changed (each one reboots the keyboard for a moment).
-  `aula-sync off` (run at shutdown from `openrgb-off.service`) turns the bar off; there is no
-  known command to turn the main keys off. The udev rule lets the logged-in user talk to the
-  receiver without sudo. Don't write past the 21-byte blocks of the table: the 7 bytes after
-  them are the device identity.
+**AULA F99 Pro keyboard:** over USB it is driven by OpenRGB like any other device (support for it
+was submitted upstream, OpenRGB merge request !3882, so until that is merged this needs an OpenRGB
+built from that branch). It only has "Off" and "Direct" modes, no "Static", so `openrgb-theme`
+looks for devices without a "Static" mode in `openrgb -ld` and sets them to Direct with the same
+colour. Over the 2.4G receiver OpenRGB cannot control it; an earlier `aula-sync` script did
+(it wrote the colour straight to the keyboard config, and also set the side bar's mode and one
+of its 7 fixed colours). It was removed because it does nothing over USB; it lives in this
+repo's git history (commit `a889a09`) if the wireless sync is ever wanted again.
 
 ### LUKS TPM2 auto-unlock (not in this repo -- see the skill)
 

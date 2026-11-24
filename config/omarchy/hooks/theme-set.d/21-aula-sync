@@ -1,3 +1,0 @@
-#!/bin/bash
-# Barrita del AULA F99 Pro: color mas cercano al acento del tema (en segundo plano).
-setsid -f "$HOME/.local/bin/aula-sync" theme >/dev/null 2>&1
