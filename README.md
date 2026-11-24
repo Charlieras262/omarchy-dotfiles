@@ -245,10 +245,18 @@ active theme's accent, read from `~/.local/state/omarchy/current/theme/keyboard.
 was submitted upstream, OpenRGB merge request !3882, so until that is merged this needs an OpenRGB
 built from that branch). It only has "Off" and "Direct" modes, no "Static", so `openrgb-theme`
 looks for devices without a "Static" mode in `openrgb -ld` and sets them to Direct with the same
-colour. Over the 2.4G receiver OpenRGB cannot control it; an earlier `aula-sync` script did
-(it wrote the colour straight to the keyboard config, and also set the side bar's mode and one
-of its 7 fixed colours). It was removed because it does nothing over USB; it lives in this
-repo's git history (commit `a889a09`) if the wireless sync is ever wanted again.
+colour.
+
+Over its 2.4G receiver (3554:fa09) OpenRGB has no support upstream yet (only stale draft merge
+requests !3026/!3027). It works with an experimental local controller kept on the
+`wireless-dongle-test` branch of the OpenRGB fork (merged into `rigg3x-build`): it identifies
+the model with report 0x13 command 0x05 and paints with the live command 0x88 (report 0x13, 20
+byte packets, checksum = sum of bytes 0-18 in byte 19). The keyboard falls back to its own
+effect when it stops receiving packets, so the controller re-sends the colours every 400 ms
+(1.1 s was not enough: random flicker). That keeps the keyboard awake, so expect more battery
+use than on USB. An earlier `aula-sync` script wrote the colour into the keyboard config instead
+(persistent, rebooted the keyboard on every change); it is in this repo's git history (commit
+`a889a09`).
 
 ### LUKS TPM2 auto-unlock (not in this repo -- see the skill)
 
