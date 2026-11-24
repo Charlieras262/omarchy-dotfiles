@@ -6,7 +6,7 @@ After=multi-user.target
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/bin/true
-ExecStop=/usr/bin/openrgb --mode static --color 000000
+ExecStop=-openrgb --mode static --color 000000
 ExecStop=-/usr/bin/python3 -I @HOME@/.local/bin/aula-sync off
 TimeoutStopSec=20
 

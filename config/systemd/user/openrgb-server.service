@@ -2,7 +2,7 @@
 Description=Servidor OpenRGB (detecta dispositivos una sola vez)
 
 [Service]
-ExecStart=/usr/bin/openrgb --server
+ExecStart=openrgb --server
 Restart=on-failure
 
 [Install]

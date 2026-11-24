@@ -228,6 +228,11 @@ active theme's accent, read from `~/.local/state/omarchy/current/theme/keyboard.
 - `openrgb-server.service` (user) keeps `openrgb --server` running so the
   script only talks to it (~0.05 s) instead of re-detecting devices (~1.5 s).
   `openrgb-theme.service` (user, oneshot) applies the colour at login.
+- **Which `openrgb` binary runs:** the units say `ExecStart=openrgb` (no path). systemd resolves
+  bare names through its fixed search path `/usr/local/bin:/usr/bin`, so a locally built binary in
+  `/usr/local/bin/openrgb` wins over the packaged `/usr/bin/openrgb`, and deleting it falls back to
+  the package with no config change. Update a local build with
+  `sudo install -Dm755 build/openrgb /usr/local/bin/openrgb && systemctl --user restart openrgb-server`.
 - `system/openrgb-off.service` (root, installed to `/etc/systemd/system/`)
   runs `openrgb --color 000000` on stop, i.e. at shutdown. The lights
   stayed on after poweroff before because "direct" mode isn't stored in the
