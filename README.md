@@ -231,7 +231,8 @@ active theme's accent, read from `~/.local/state/omarchy/current/theme/keyboard.
   re-runs `openrgb-theme` whenever the server announces a device list change, and once after
   every (re)connection. That covers a wireless keyboard that was asleep and registers when it
   wakes up, and a restarted server. There is no polling: it waits for the notification (and
-  groups the burst of notices that comes with a rescan into one application). A one-shot at
+  groups the burst of notices that comes with a rescan, with a short 0.25 s pause so a device that
+  wakes up gets its colour in well under a second). A one-shot at
   login used to do this, but it missed devices that appeared later; polling the server while it
   detects devices can make it lose one, which is why the watcher only listens.
 - **Which `openrgb` binary runs:** the units say `ExecStart=openrgb` (no path). systemd resolves

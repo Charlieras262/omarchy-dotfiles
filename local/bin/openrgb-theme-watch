@@ -27,7 +27,7 @@ PKT_SET_CLIENT_NAME = 50
 PKT_DEVICE_LIST_UPDATED = 100
 
 SETTLE = 4.0        # after connecting: the server may still be detecting devices
-DEBOUNCE = 1.5      # after a notification: devices register one after another
+DEBOUNCE = 0.25     # after a notification: devices register one after another
 RETRY = 2.0         # between connection attempts
 
 THEME = os.path.expanduser("~/.local/bin/openrgb-theme")
