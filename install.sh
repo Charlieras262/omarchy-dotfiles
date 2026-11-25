@@ -107,12 +107,17 @@ echo "== OpenRGB theme sync =="
 if command -v openrgb >/dev/null 2>&1; then
   backup_and_copy "$SCRIPT_DIR/local/bin/openrgb-theme" "$LOCAL_BIN_DIR/openrgb-theme"
   chmod +x "$LOCAL_BIN_DIR/openrgb-theme"
+  backup_and_copy "$SCRIPT_DIR/local/bin/openrgb-theme-watch" "$LOCAL_BIN_DIR/openrgb-theme-watch"
+  chmod +x "$LOCAL_BIN_DIR/openrgb-theme-watch"
   backup_and_copy "$SCRIPT_DIR/config/omarchy/hooks/theme-set.d/20-openrgb" "$OMARCHY_CFG_DIR/hooks/theme-set.d/20-openrgb"
   chmod +x "$OMARCHY_CFG_DIR/hooks/theme-set.d/20-openrgb"
   backup_and_copy "$SCRIPT_DIR/config/systemd/user/openrgb-server.service" "$HOME/.config/systemd/user/openrgb-server.service"
-  backup_and_copy "$SCRIPT_DIR/config/systemd/user/openrgb-theme.service" "$HOME/.config/systemd/user/openrgb-theme.service"
+  backup_and_copy "$SCRIPT_DIR/config/systemd/user/openrgb-theme-watch.service" "$HOME/.config/systemd/user/openrgb-theme-watch.service"
+  # Replaced by openrgb-theme-watch (a one-shot at login missed devices that appear later)
+  systemctl --user disable --now openrgb-theme.service 2>/dev/null || true
+  rm -f "$HOME/.config/systemd/user/openrgb-theme.service"
   systemctl --user daemon-reload
-  systemctl --user enable --now openrgb-server.service openrgb-theme.service \
+  systemctl --user enable --now openrgb-server.service openrgb-theme-watch.service \
     || echo "warning: could not enable the openrgb user units"
   # Root-owned piece (asks for your sudo password): the shutdown-off unit.
   if sudo install -m644 "$SCRIPT_DIR/system/openrgb-off.service" /etc/systemd/system/openrgb-off.service \

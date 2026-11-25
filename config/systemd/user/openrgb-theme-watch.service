@@ -1,0 +1,12 @@
+[Unit]
+Description=Reapply the Omarchy theme colour when OpenRGB devices change
+After=openrgb-server.service
+Wants=openrgb-server.service
+
+[Service]
+ExecStart=%h/.local/bin/openrgb-theme-watch
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

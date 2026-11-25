@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""Reapply the Omarchy theme colour to OpenRGB whenever its device list changes.
+
+Stays connected to the OpenRGB server (SDK, port 6742) and waits for the server's
+"device list updated" notification, which it sends to every connected client when a
+device is registered late (for example a wireless keyboard that was asleep and woke up)
+or when devices are rescanned. It also applies the theme once after (re)connecting, so
+restarting the server restores the colours too.
+
+No polling: the only traffic is the one persistent connection. If the server goes away
+the script waits and reconnects.
+"""
+import os
+import select
+import socket
+import struct
+import subprocess
+import sys
+import time
+
+HOST = "127.0.0.1"
+PORT = 6742
+
+MAGIC = b"ORGB"
+HEADER = struct.Struct("<4sIII")        # magic, device id, packet id, payload size
+PKT_SET_CLIENT_NAME = 50
+PKT_DEVICE_LIST_UPDATED = 100
+
+SETTLE = 4.0        # after connecting: the server may still be detecting devices
+DEBOUNCE = 1.5      # after a notification: devices register one after another
+RETRY = 2.0         # between connection attempts
+
+THEME = os.path.expanduser("~/.local/bin/openrgb-theme")
+
+
+def log(message):
+    print(message, flush=True)
+
+
+def apply_theme(reason):
+    log(f"applying theme ({reason})")
+    try:
+        subprocess.run([THEME], timeout=60, check=False)
+    except (OSError, subprocess.SubprocessError) as error:
+        log(f"openrgb-theme failed: {error}")
+
+
+def send_packet(sock, packet_id, payload=b"", device_id=0):
+    sock.sendall(HEADER.pack(MAGIC, device_id, packet_id, len(payload)) + payload)
+
+
+def watch(sock):
+    """Read notifications until the server closes the connection."""
+    send_packet(sock, PKT_SET_CLIENT_NAME, b"Omarchy theme watcher\0")
+
+    buffer = b""
+    apply_at = time.monotonic() + SETTLE        # first application after connecting
+
+    while True:
+        timeout = None if apply_at is None else max(0.0, apply_at - time.monotonic())
+        readable, _, _ = select.select([sock], [], [], timeout)
+
+        if readable:
+            data = sock.recv(4096)
+            if not data:
+                return                          # server closed the connection
+            buffer += data
+
+            while len(buffer) >= HEADER.size:
+                magic, _device, packet_id, size = HEADER.unpack_from(buffer)
+                if magic != MAGIC:
+                    log("unexpected data from the server, reconnecting")
+                    return
+                if len(buffer) < HEADER.size + size:
+                    break                       # wait for the rest of the payload
+                buffer = buffer[HEADER.size + size:]
+                if packet_id == PKT_DEVICE_LIST_UPDATED:
+                    log("device list updated")
+                    apply_at = time.monotonic() + DEBOUNCE
+
+        if apply_at is not None and time.monotonic() >= apply_at:
+            apply_theme("connected or devices changed")
+            apply_at = None
+
+
+def main():
+    while True:
+        try:
+            sock = socket.create_connection((HOST, PORT), timeout=5)
+        except OSError:
+            time.sleep(RETRY)
+            continue
+
+        log("connected to the OpenRGB server")
+        sock.settimeout(None)
+
+        try:
+            watch(sock)
+        except OSError as error:
+            log(f"connection error: {error}")
+        finally:
+            sock.close()
+
+        log("disconnected, waiting for the server")
+        time.sleep(SETTLE)                      # let a restarting server come up
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)
