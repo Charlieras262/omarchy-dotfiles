@@ -15,13 +15,13 @@ patches = [
     ),
     (
         "/usr/share/omarchy/shell/Ui/KeyboardPanel.qml",
-        "    color: Color.popups.background\n",
-        "    color: Qt.rgba(Color.popups.background.r, Color.popups.background.g, Color.popups.background.b, 1)\n",
+        "    color: Commons.Color.popups.background\n",
+        "    color: Qt.rgba(Commons.Color.popups.background.r, Commons.Color.popups.background.g, Commons.Color.popups.background.b, 1)\n",
     ),
     (
         "/usr/share/omarchy/shell/Ui/KeyboardPanel.qml",
-        "    opacity: root.open || root.popoutSwitching ? 1.0 : 0\n",
-        "    opacity: (root.open || root.popoutSwitching ? 1.0 : 0) * Style.shellOpacity\n",
+        "    opacity: shown\n",
+        "    opacity: shown * Style.shellOpacity\n",
     ),
     (
         "/usr/share/omarchy/shell/Ui/KeyboardPanel.qml",
@@ -31,10 +31,10 @@ patches = [
         "  property int gap: Style.gapsOut + barEdgeMargin  // distance between bar edge and panel\n",
     ),
     (
-        "/usr/share/omarchy/shell/plugins/notifications/components/NotificationCard.qml",
-        "  color: Color.notifications.background\n",
-        "  color: Qt.rgba(Color.notifications.background.r, Color.notifications.background.g, Color.notifications.background.b, 1)\n"
-        "  opacity: Style.shellOpacity\n",
+        "/usr/share/omarchy/shell/plugins/notifications/Toast.qml",
+        "    color: Commons.Color.notifications.background\n",
+        "    color: Qt.rgba(Commons.Color.notifications.background.r, Commons.Color.notifications.background.g, Commons.Color.notifications.background.b, 1)\n"
+        "    opacity: Style.shellOpacity\n",
     ),
     (
         "/usr/share/omarchy/shell/plugins/menu/Menu.qml",
@@ -44,10 +44,9 @@ patches = [
     ),
     (
         "/usr/share/omarchy/shell/plugins/notifications/Service.qml",
-        "  readonly property int barClearance: liveBarSize + Style.gapsOut\n",
-        "  readonly property real barEdgeMargin: shell && shell.bar && shell.bar.barHidden !== undefined\n"
-        "    && shell.bar.floatGap !== undefined ? Math.max(0, Number(shell.bar.floatGap) || 0) : 0\n"
-        "  readonly property int barClearance: liveBarSize + barEdgeMargin + Style.gapsOut\n",
+        "    return Delivery.deckMargins(barPosition, Delivery.barThickness(barRef, screenName, defaultBarSize), Style.gapsOut)\n",
+        "    var edgeMargin = barRef && barRef.floatGap !== undefined ? Math.max(0, Number(barRef.floatGap) || 0) : 0\n"
+        "    return Delivery.deckMargins(barPosition, Delivery.barThickness(barRef, screenName, defaultBarSize) + edgeMargin, Style.gapsOut)\n",
     ),
 ]
 
